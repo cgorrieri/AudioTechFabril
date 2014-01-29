@@ -1,6 +1,6 @@
 /*
 * This object represent the graph used to play songs
-* volume: must be between 0 and 1 
+* - volume: must be between 0 and 1 
 */
 function AudioGraph(volume) {
     // Master volume slider
@@ -16,15 +16,15 @@ function AudioGraph(volume) {
     this.masterVolumeNode = this.context.createGain();
     this.changeMasterVolume(volume);
 
-    this.buffers = [];
+    // Array of Subtracks to put in the graph
+    this.subtracks = [];
 
     this.lastTime = 0;
     this.elapsedTimeSinceStart = 0;
 }
 
+// Private function to initialise the Audio Context
 function initAudioContext() {
-    // Initialise the Audio Context
-    // There can be only one!
     var context;
 
     if (typeof AudioContext == "function") {
@@ -39,34 +39,46 @@ function initAudioContext() {
     return context;
 }
 
+// Build the graph using buffers
 AudioGraph.prototype.buildGraph = function() {
     var thus = this;
-    this.buffers.forEach(function(buffer, i) {
+    this.subtracks.forEach(function(subtrack, i) {
 		// each sound sample is the  source of a graph
         thus.graphNodes[i] = thus.context.createBufferSource();
-        thus.graphNodes[i].buffer = buffer;
+        thus.graphNodes[i].buffer = subtrack.buffer;
         // connect each sound sample to a vomume node
-        thus.trackVolumeNodes[i] = thus.context.createGain();
+        //thus.trackVolumeNodes[i] = thus.context.createGain();
+        subtrack.volumeNode = thus.context.createGain();
         // Connect the sound sample to its volume node
-        thus.graphNodes[i].connect(thus.trackVolumeNodes[i]);
+        thus.graphNodes[i].connect(subtrack.volumeNode);
         // Connects all track volume nodes a single master volume node
-        thus.trackVolumeNodes[i].connect(thus.masterVolumeNode);
-        // Connect the master volume to the speakers
-        thus.masterVolumeNode.connect(thus.context.destination);
+        // thus.trackVolumeNodes[i].connect(thus.masterVolumeNode);
+        subtrack.volumeNode.connect(thus.masterVolumeNode);
     });
+    // Connect the master volume to the speakers
+    thus.masterVolumeNode.connect(thus.context.destination);
 }
 
+/*
+* Replace buffers and rebuild the graph
+* - subtracks: Array of Subtrack object
+*/
 AudioGraph.prototype.setSubtracks = function(subtracks) {
-	this.graphNodes = [];
+	this.subtracks.forEach(function (subtrack) {
+    subtrack.volumeNode = undefined;
+    subtrack.volume = 100;
+  });
+  this.graphNodes = [];
 	this.trackVolumeNodes = [];
 	this.elapsedTimeSinceStart = 0;
-	var _buffers = [];
-	subtracks.forEach(function(subtrack, i) {
-		_buffers[i] = subtrack.buffer;
-	})
-	this.buffers = _buffers;
+	
+	this.subtracks = subtracks;
 };
 
+/*
+* Play song from the givent time
+* Used privatly
+*/
 AudioGraph.prototype.playFrom = function(startTime) {
 	this.buildGraph();
 
@@ -112,16 +124,16 @@ AudioGraph.prototype.changeMasterVolume = function(volume) {
 }
 
 
-AudioGraph.prototype.muteUnmuteTrack = function(trackNumber) {
-// AThe mute / unmute button
-    var b = document.querySelector("#mute" + trackNumber);
-    if (this.trackVolumeNodes[trackNumber].gain.value == 1) {
-        this.trackVolumeNodes[trackNumber].gain.value = 0;
-        b.innerHTML = "Unmute";
-    } else {
-        this.trackVolumeNodes[trackNumber].gain.value = 1;
-        b.innerHTML = "Mute";
-    }
+// AudioGraph.prototype.muteUnmuteTrack = function(trackNumber) {
+// // AThe mute / unmute button
+//     var b = document.querySelector("#mute" + trackNumber);
+//     if (this.trackVolumeNodes[trackNumber].gain.value == 1) {
+//         this.trackVolumeNodes[trackNumber].gain.value = 0;
+//         b.innerHTML = "Unmute";
+//     } else {
+//         this.trackVolumeNodes[trackNumber].gain.value = 1;
+//         b.innerHTML = "Mute";
+//     }
 
 
-}
+// }
