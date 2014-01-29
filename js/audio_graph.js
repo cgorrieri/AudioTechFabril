@@ -1,5 +1,6 @@
 /*
-* volume: must bo between 0 and 1 
+* This object represent the graph used to play songs
+* volume: must be between 0 and 1 
 */
 function AudioGraph(volume) {
     // Master volume slider
