@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AudioTech CyGO</title>
+
+        <!-- FOUNDATION -->
+        <link rel="stylesheet" href="foundation/css/normalize.css">
+        <link rel="stylesheet" href="foundation/css/foundation.css">
+        <link rel="stylesheet" href="foundation/foundation-icons/foundation-icons.css">
+        <script src="foundation/js/vendor/custom.modernizr.js"></script>
+        <script src="foundation/js/vendor/jquery.js"></script>
+        <!-- END FOUNDATION -->
+
+        <!--
+            <script src="js/libs/jquery-1.9.0/jquery.min.js"></script>
+        -->
+
+        <script src="js/subtrack.js"></script>
+        <script src="js/track.js"></script>
+        <script src="js/audio_graph.js"></script>
+        
+        <style>
+            canvas {
+                border: solid 2Px black;
+                position                    : absolute;
+                top                         : 150px;
+                left                        : 200px;
+            }
+            #myCanvas {
+                background:black;
+            }
+            .sample {
+                border: solid white 1px;
+                background:grey;
+            }
+        </style>
+    </head>
+    <body ng-app ng-controller="PlayerCtrl">
+
+        <div class="row">
+            <div class="small-12 columns">
+                <h1>AudioTech CyGO</h1>
+                <button class="button small radius" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
+                    <i class="fi-play"></i> Play
+                </button>      
+                <button class="button small radius" ng-click="pause()" ng-show="pausable">
+                    <i class="fi-pause"></i> Pause
+                </button>
+                <button class="button small radius" id="bstop" ng-click="stop()" ng-disabled="!stoppable">
+                    <i class="fi-stop"></i> Stop
+                </button>
+                Master Volume : <input type="range" id ="masterVolume" min="0" max="100" value="100" ng-model="volume">
+            </div>
+        </div>
+        <div class="row">
+            <div class="small-3 columns">
+                <div class="panel">
+                    <div id="songs">
+                        <select ng-options='track as track.name for track in tracks'
+                            ng-model="selectedTrack" ></select>
+                    </div>
+                </div>
+                <div id="tracks">
+                    <div ng-repeat="subtrack in selectedTrack.subtracks">
+                        <label for="">{{subtrack.name}}</label>
+                        <input type="checkbox" ng-model="subtrack.loaded">
+                        <!-- <div class="progress success">
+                            <span id="{{subtrack.name}}" class="meter" style="width: {{subtrack.progress}}%"></span>
+                        </div> -->
+
+                    </div>
+                </div>
+            </div>
+            <div class="small-9 columns">
+                <canvas id="tracksDisplay" width="300" height="400"></canvas>
+            </div>
+        </div>
+        
+
+        <script src="http://code.angularjs.org/1.2.9/angular.min.js"></script>
+        <script src="js/PlayerCtrl.js"></script>
+
+        <!-- Foundation boutstrap -->
+        <script src="foundation/js/foundation.min.js"></script>
+        <script>$(document).foundation();</script>
+    </body>
+</html>

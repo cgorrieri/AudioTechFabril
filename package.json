@@ -1,0 +1,19 @@
+{
+  "name": "audiotech",
+  "preferGlobal": true,
+  "version": "0.1.1",
+  "author": "Cyril Gorrieri <gorrieri@polytech.unice.fr>",
+  "description": "AudioTech",
+  "scripts": {
+    "start": "node server.js",
+    "predeploy": "echo This will be run before deploying the app",
+    "postdeploy": "echo This will be run after deploying the app"
+  },
+  "dependencies" : {
+    "express"   :  "*"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.6"
+  }
+}
