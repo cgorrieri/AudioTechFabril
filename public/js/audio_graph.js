@@ -1,3 +1,7 @@
+PLAYING = 0;
+PAUSED = 1;
+STOPPED = 2;
+
 /*
 * This object represent the graph used to play songs
 * - volume: must be between 0 and 1 
@@ -21,6 +25,9 @@ function AudioGraph(volume) {
 
     this.lastTime = 0;
     this.elapsedTimeSinceStart = 0;
+
+    this.state = STOPPED;
+    this.duration = 0;
 }
 
 // Private function to initialise the Audio Context
@@ -72,6 +79,7 @@ AudioGraph.prototype.setSubtracks = function(subtracks) {
 	this.elapsedTimeSinceStart = 0;
 	
 	this.subtracks = subtracks;
+  this.duration = subtracks[0].buffer.duration;
 };
 
 /*
@@ -81,25 +89,25 @@ AudioGraph.prototype.setSubtracks = function(subtracks) {
 AudioGraph.prototype.playFrom = function(startTime) {
 	this.buildGraph();
 
-  	this.graphNodes.forEach(function(node) {
-		// First parameter is the delay before playing the sample
-		// second one is the offset in the song, in seconds, can be 2.3456
-		// very high precision !
-        node.start(0, startTime);
-    })
+	this.graphNodes.forEach(function(node) {
+	// First parameter is the delay before playing the sample
+	// second one is the offset in the song, in seconds, can be 2.3456
+	// very high precision !
+      node.start(0, startTime);
+  })
 
-  	// context.currentTime get time since context is started
-    
+  this.state = PLAYING;    
 }
 
-AudioGraph.prototype.play = function(startTime) {
-    this.playFrom(startTime);
-    this.lastTime = this.context.currentTime;
+AudioGraph.prototype.play = function(percent) {
+  this.elapsedTimeSinceStart = percent*this.duration;
+  this.lastTime = this.context.currentTime - this.elapsedTimeSinceStart;
+  this.playFrom(this.elapsedTimeSinceStart);
 }
 
 AudioGraph.prototype.resume = function() {
 	this.lastTime = this.context.currentTime - this.elapsedTimeSinceStart;
-    this.playFrom(this.elapsedTimeSinceStart);
+  this.playFrom(this.elapsedTimeSinceStart);
 }
 
 AudioGraph.prototype.stop = function() {
@@ -108,12 +116,13 @@ AudioGraph.prototype.stop = function() {
         s.stop(0);
     });
     this.elapsedTimeSinceStart = 0;
+    this.state = STOPPED;
 }
 
 AudioGraph.prototype.pause = function() {
     this.stop();
-
     this.elapsedTimeSinceStart = this.context.currentTime - this.lastTime;
+    this.state = PAUSED;
 }
 
 AudioGraph.prototype.changeMasterVolume = function(volume) {
@@ -122,17 +131,15 @@ AudioGraph.prototype.changeMasterVolume = function(volume) {
    	else this.masterVolumeNode.gain.value = 0;
 }
 
-
-// AudioGraph.prototype.muteUnmuteTrack = function(trackNumber) {
-// // AThe mute / unmute button
-//     var b = document.querySelector("#mute" + trackNumber);
-//     if (this.trackVolumeNodes[trackNumber].gain.value == 1) {
-//         this.trackVolumeNodes[trackNumber].gain.value = 0;
-//         b.innerHTML = "Unmute";
-//     } else {
-//         this.trackVolumeNodes[trackNumber].gain.value = 1;
-//         b.innerHTML = "Mute";
-//     }
-
-
-// }
+AudioGraph.prototype.getPercent = function() {
+    switch(this.state) {
+      case STOPPED:
+        return 0;
+      case PAUSED:
+        return this.elapsedTimeSinceStart/this.duration*100;
+      case PLAYING:
+        var timeSinseStart = this.context.currentTime - this.lastTime;
+        return timeSinseStart/this.duration*100;
+    }
+    return 0;
+}

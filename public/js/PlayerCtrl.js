@@ -9,9 +9,45 @@ function PlayerCtrl ($scope, $http) {
 	$scope.stoppable = false;
 	$scope.stopped = true;
 
-  $scope.canvas = document.querySelector("#subtracks_canvas");
-
 	$scope.volume = 100;
+
+  $scope.canvas = document.querySelector("#subtracks_canvas");
+  // Create a second canvas
+  $scope.frontCanvas = document.createElement('canvas');
+  $scope.frontCanvas.id = 'canvasFront';
+  // Add it as a second child of the mainCanvas parent.
+  $scope.canvas.parentNode.appendChild($scope.frontCanvas);
+  // make it same size as its brother
+  $scope.frontCanvas.width = $scope.canvas.width;
+  $scope.frontCtx = $scope.frontCanvas.getContext('2d');
+
+  $scope.frontCanvas.addEventListener('click', function(mouseEvent) {
+    $scope.stop();
+    $scope.play(mouseEvent.layerX / $scope.frontCanvas.width);
+    $scope.$apply();
+  }, false);
+
+  $scope.animate = function() {
+    // update canvas only if the song is playing
+    // if($scope.pausable) {
+      // update
+      var pos = $scope.audioGraph.getPercent()/100 * $scope.frontCanvas.width;
+
+      // clear
+      $scope.frontCtx.clearRect(0, 0, $scope.frontCanvas.width, $scope.frontCanvas.height);
+
+      // draw stuff
+      $scope.frontCtx.beginPath();
+      $scope.frontCtx.rect(pos-3, 0, 3, $scope.frontCanvas.height);
+      $scope.frontCtx.fillStyle = 'red';
+      $scope.frontCtx.fill();
+    // }
+    // request new frame
+    requestAnimFrame(function() {
+      $scope.animate();
+    });
+  }
+  $scope.animate();
 
 	$http({method: 'GET', url: '/track'}).
 	  success(function(data, status, headers, config) {
@@ -29,11 +65,16 @@ function PlayerCtrl ($scope, $http) {
 		if(!$scope.selectedTrack) return;
     $scope.selectedTrack.load(function(subtracks) {
     	$scope.$apply();
+      // Counter to watch the evolution of the load
   		var subtracksLoadedCount = 0;
+
+      // TODO: prendre taille dynamiquement
       $scope.canvas.height = 80*subtracks.length+20*(subtracks.length-1);
+      $scope.frontCanvas.height = $scope.canvas.height;
+      // Load all subtracks
       $scope.selectedTrack.subtracks.forEach(function(subtrack,i) {
         $scope.selectedTrack.subtracks[i].load($scope.audioGraph, function(subtrack){
-          //$scope.$apply();
+          $scope.$apply();
           if(++subtracksLoadedCount == subtracks.length) {
             $scope.audioGraph.setSubtracks($scope.selectedTrack.subtracks);
             $scope.enablePlay();
@@ -56,24 +97,22 @@ function PlayerCtrl ($scope, $http) {
 	}
 
 	$scope.play = function(start) {
-	    if($scope.stopped) $scope.audioGraph.play(start);
-	    else $scope.audioGraph.resume();
-	    //$scope.$apply(function() {
-			$scope.pausable = true;
-			$scope.stoppable = true;
-		//});
-	    $scope.stopped = false;
+    if($scope.stopped) $scope.audioGraph.play(start);
+    else $scope.audioGraph.resume();
+		$scope.pausable = true;
+		$scope.stoppable = true;
+	  $scope.stopped = false;
 	}
 
 	$scope.pause = function() {
-	    $scope.audioGraph.pause();
-	    $scope.pausable = false;
+    $scope.audioGraph.pause();
+    $scope.pausable = false;
 	}
 
 	$scope.stop = function() {
-	    $scope.audioGraph.stop();
-	    $scope.pausable = false;
+    $scope.audioGraph.stop();
+    $scope.pausable = false;
 		$scope.stoppable = false;
-	    $scope.stopped = true;
+    $scope.stopped = true;
 	}
 }
