@@ -20,6 +20,10 @@ function AudioGraph(volume) {
     this.masterVolumeNode = this.context.createGain();
     this.changeMasterVolume(volume);
 
+    // Create à analyser node
+    //
+    this.analyser = this.context.createAnalyser();
+
     // Array of Subtracks to put in the graph
     this.subtracks = [];
 
@@ -61,8 +65,13 @@ AudioGraph.prototype.buildGraph = function() {
         // Connects all track volume nodes a single master volume node
         subtrack.volumeNode.connect(thus.masterVolumeNode);
     });
-    // Connect the master volume to the speakers
-    thus.masterVolumeNode.connect(thus.context.destination);
+    // Connect the analyser node
+    //
+    thus.masterVolumeNode.connect(this.analyser);
+
+    // Connect the destination node
+    //
+    this.analyser.connect(this.context.destination);
 }
 
 /*

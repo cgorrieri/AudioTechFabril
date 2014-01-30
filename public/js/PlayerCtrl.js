@@ -12,6 +12,14 @@ function PlayerCtrl ($scope, $http) {
 	$scope.volume = 100;
 
   $scope.canvas = document.querySelector("#subtracks_canvas");
+
+  $scope.canvas_frequence_left = document.querySelector("#canvas_fequencies_left");
+  $scope.canvas_frequence_right = document.querySelector("#canvas_fequencies_right");
+
+  $scope.ctx_sound_left = $scope.canvas_frequence_left.getContext("2d");
+  $scope.ctx_sound_right = $scope.canvas_frequence_right.getContext("2d");
+  $scope.ctx_sound_right.translate($scope.canvas_frequence_right.width, 0);
+
   // Create a second canvas
   $scope.frontCanvas = document.createElement('canvas');
   $scope.frontCanvas.id = 'canvasFront';
@@ -27,6 +35,8 @@ function PlayerCtrl ($scope, $http) {
     $scope.$apply();
   }, false);
 
+  // Animatite function, periodicaly call
+  //
   $scope.animate = function() {
     // update canvas only if the song is playing
     // if($scope.pausable) {
@@ -41,6 +51,8 @@ function PlayerCtrl ($scope, $http) {
       $scope.frontCtx.rect(pos-3, 0, 3, $scope.frontCanvas.height);
       $scope.frontCtx.fillStyle = 'red';
       $scope.frontCtx.fill();
+
+      drawFrequencies($scope.audioGraph.analyser, $scope.canvas_frequence_left, $scope.canvas_frequence_right);
     // }
     // request new frame
     requestAnimFrame(function() {

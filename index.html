@@ -22,6 +22,7 @@
         <script src="public/js/track.js"></script>
         <script src="public/js/track_drawer.js"></script>
         <script src="public/js/audio_graph.js"></script>
+        <script src="public/js/frequencies_drawer.js"></script>
         <script>
         window.requestAnimFrame = (function(callback) {
           return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
@@ -54,9 +55,24 @@
               width:150px;
               height:11px;
             }
+            #canvas_fequencies_left, #canvas_fequencies_right {
+              position: absolute;
+            }
+            #canvas_fequencies_left {
+              top:0px;
+              left:0px;
+              position
+            }
+            #canvas_fequencies_right {
+              float:right;
+              top:0px;
+              right:0px;
+            }
         </style>
     </head>
     <body ng-app ng-controller="PlayerCtrl">
+        <canvas id="canvas_fequencies_left" width="250" height="750"></canvas>
+        <canvas id="canvas_fequencies_right" width="250" height="750"></canvas>
 
         <div class="row">
           <div class="small-3 columns">
