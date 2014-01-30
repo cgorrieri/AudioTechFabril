@@ -9,6 +9,8 @@ function PlayerCtrl ($scope, $http) {
 	$scope.stoppable = false;
 	$scope.stopped = true;
 
+  $scope.canvas = document.querySelector("#subtracks_canvas");
+
 	$scope.volume = 100;
 
 	$http({method: 'GET', url: '/track'}).
@@ -25,19 +27,20 @@ function PlayerCtrl ($scope, $http) {
 
 	$scope.$watch("selectedTrack",function() {
 		if(!$scope.selectedTrack) return;
-        $scope.selectedTrack.load(function(subtracks) {
-        	$scope.$apply();
-    		var subtracksLoadedCount = 0;
-    		for(var i = 0; i< $scope.selectedTrack.subtracks.length ; i++) {
-    			$scope.selectedTrack.subtracks[i].load($scope.audioGraph, function(){
-					$scope.$apply();
-					if(++subtracksLoadedCount == subtracks.length) {
-                        $scope.audioGraph.setSubtracks($scope.selectedTrack.subtracks);
-                        $scope.enablePlay();
-            		}
-				});
-
-    		}
+    $scope.selectedTrack.load(function(subtracks) {
+    	$scope.$apply();
+  		var subtracksLoadedCount = 0;
+      $scope.canvas.height = 80*subtracks.length+20*(subtracks.length-1);
+      $scope.selectedTrack.subtracks.forEach(function(subtrack,i) {
+        $scope.selectedTrack.subtracks[i].load($scope.audioGraph, function(subtrack){
+          //$scope.$apply();
+          if(++subtracksLoadedCount == subtracks.length) {
+            $scope.audioGraph.setSubtracks($scope.selectedTrack.subtracks);
+            $scope.enablePlay();
+          }
+          draw_track(subtrack.buffer, $scope.canvas, i);
+        });
+      });
 		});
 	});
 

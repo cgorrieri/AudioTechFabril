@@ -47,12 +47,11 @@ AudioGraph.prototype.buildGraph = function() {
         thus.graphNodes[i] = thus.context.createBufferSource();
         thus.graphNodes[i].buffer = subtrack.buffer;
         // connect each sound sample to a vomume node
-        //thus.trackVolumeNodes[i] = thus.context.createGain();
-        subtrack.volumeNode = thus.context.createGain();
+        if(!subtrack.volumeNode)
+          subtrack.volumeNode = thus.context.createGain();
         // Connect the sound sample to its volume node
         thus.graphNodes[i].connect(subtrack.volumeNode);
         // Connects all track volume nodes a single master volume node
-        // thus.trackVolumeNodes[i].connect(thus.masterVolumeNode);
         subtrack.volumeNode.connect(thus.masterVolumeNode);
     });
     // Connect the master volume to the speakers

@@ -20,17 +20,12 @@
 
         <script src="public/js/subtrack.js"></script>
         <script src="public/js/track.js"></script>
+        <script src="public/js/track_drawer.js"></script>
         <script src="public/js/audio_graph.js"></script>
         
         <style>
-            canvas {
-                border: solid 2Px black;
-                position                    : absolute;
-                top                         : 150px;
-                left                        : 200px;
-            }
-            #myCanvas {
-                background:black;
+            #subtracks_canvas {
+                background:rgb(242, 242, 242);
             }
             .sample {
                 border: solid white 1px;
@@ -48,52 +43,54 @@
     <body ng-app ng-controller="PlayerCtrl">
 
         <div class="row">
-            <div class="small-12 columns">
-                <h1>AudioTech CyGO</h1>
-                <button class="button small radius" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
-                    <i class="fi-play"></i> Play
-                </button>      
-                <button class="button small radius" ng-click="pause()" ng-show="pausable">
-                    <i class="fi-pause"></i> Pause
-                </button>
-                <button class="button small radius" id="bstop" ng-click="stop()" ng-disabled="!stoppable">
-                    <i class="fi-stop"></i> Stop
-                </button>
-                Master Volume : <input type="range" id ="masterVolume" min="0" max="100" value="100" ng-model="volume">
+          <div class="small-3 columns">
+            <div class="panel" style="margin-top:23px;">
+                <div id="songs">
+                    <select ng-options='track as track.name for track in tracks'
+                        ng-model="selectedTrack" ></select>
+                </div>
             </div>
+          </div>
+          <div class="small-9 columns">
+            <h1>AudioTech CyGO</h1>
+            <button class="button small radius" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
+                <i class="fi-play"></i> Play
+            </button>      
+            <button class="button small radius" ng-click="pause()" ng-show="pausable">
+                <i class="fi-pause"></i> Pause
+            </button>
+            <button class="button small radius" id="bstop" ng-click="stop()" ng-disabled="!stoppable">
+                <i class="fi-stop"></i> Stop
+            </button>
+            Master Volume : <input type="range" id ="masterVolume" min="0" max="100" value="100" ng-model="volume">
+          </div>
         </div>
         <div class="row">
-            <div class="small-3 columns">
-                <div class="panel">
-                    <div id="songs">
-                        <select ng-options='track as track.name for track in tracks'
-                            ng-model="selectedTrack" ></select>
-                    </div>
+          <div class="small-3 columns">
+            <div id="tracks">
+              <div class="panel" ng-repeat="subtrack in selectedTrack.subtracks">
+                <label for="">{{subtrack.name}}</label>
+                <img ng-hide="subtrack.loaded" src="/public/image/ajax-loader.gif"/>
+                <div ng-show="subtrack.loaded">
+                  <i class="clickable fi-volume" ng-click="subtrack.mute()" ng-hide="subtrack.mutted"></i>
+                  <i class="clickable fi-volume-strike" ng-click="subtrack.unmute()" ng-show="subtrack.mutted"></i>
+                  <input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()">
                 </div>
-                <div id="tracks">
-                    <div class="panel" ng-repeat="subtrack in selectedTrack.subtracks">
-                        <label for="">{{subtrack.name}}</label>
-                        <img ng-hide="subtrack.loaded" src="/public/image/ajax-loader.gif"/>
-                        <div ng-show="subtrack.loaded">
-                          <i class="clickable fi-volume" ng-click="subtrack.mute()" ng-hide="subtrack.mutted"></i>
-                          <i class="clickable fi-volume-strike" ng-click="subtrack.unmute()" ng-show="subtrack.mutted"></i>
-                          <input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()">
-                        </div>
-                        
-                        <!-- <div class="progress success">
-                            <span id="{{subtrack.name}}" class="meter" style="width: {{subtrack.progress}}%"></span>
-                        </div> -->
+                
+                <!-- <div class="progress success">
+                    <span id="{{subtrack.name}}" class="meter" style="width: {{subtrack.progress}}%"></span>
+                </div> -->
 
-                    </div>
-                </div>
+              </div>
             </div>
-            <div class="small-9 columns">
-                <canvas id="tracksDisplay" width="300" height="400"></canvas>
-            </div>
+          </div>
+          <div class="small-9 columns">
+            <canvas id="subtracks_canvas" width="720" height="0"></canvas>
+          </div>
         </div>
         
 
-        <script src="http://code.angularjs.org/1.2.9/angular.min.js"></script>
+        <script src="public/js/libs/angular.min.js"></script>
         <script src="public/js/PlayerCtrl.js"></script>
 
         <!-- Foundation boutstrap -->

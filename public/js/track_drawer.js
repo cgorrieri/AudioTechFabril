@@ -1,42 +1,48 @@
-var TRACK_HEIGHT = 30;
+var TRACK_HEIGHT = 80;
 
 // Draw a track in a canvas
 // track: an AudioBuffer object
 // canvas: reference to a canvas object
 // position: position of the track in the list (start to 0)
 function draw_track(track, canvas, position) {
-	console.log("TODO: Draw track");
-	return;
+	
 	// init context to draw on the canvas
-	var ctx=canvas.getContext("2d");
-	var baseHeight = position*TRACK_HEIGHT+TRACK_HEIGHT/2;
 
-	ctx.strokeStyle = 'yellow';
-    ctx.fillStyle = '#303030';
-    ctx.beginPath();
-	ctx.moveTo(0, baseHeight);
+	var baseHeight = position*(TRACK_HEIGHT + 20)+TRACK_HEIGHT/2;
 
 	// Pas entre chaque sample
 	var pas = canvas.width/track.length;
 
-	var channel;
-	var buffer = track.getChannelData(0);
+  var index,i,j,buffer;
 
 	// initiate samples
 	var samples = [];
+  for(i = 0; i<canvas.width; i++) {
+    samples[i]=0;
+  }
 
-	// set samples
+  // Compute sampes
+  // Get max values from all channels
+  for(j = 0; j < track.numberOfChannels ; j++) {
+    buffer = track.getChannelData(j);
+  	for(i = 0; i < buffer.length; i++) {
+      index = parseInt(i*pas);
+      samples[index] = Math.max(samples[index], buffer[i]);
+  	}
+  }
 
-	// loop on samples to draw them
-	var i;
-	for(i = 0; i < buffer.length; i++) {
-		//console.log(i, buffer[i]);
-		ctx.lineTo(i,baseHeight+buffer[i]*TRACK_HEIGHT);
-		for(var j = 0; j < track.numberOfChannels; j++) {
+  var ctx=canvas.getContext("2d");
 
-		}
-	}
+  ctx.strokeStyle = '#202020';
+  ctx.lineWidth = 1;
 
-	ctx.stroke(); 
-	ctx.closePath();
+  ctx.beginPath();
+
+  // Draw samples
+  for(i = 0; i < samples.length; i++) {
+    ctx.moveTo(i+0.5, baseHeight - samples[i]*TRACK_HEIGHT/2 - 1);
+    ctx.lineTo(i+0.5, baseHeight + samples[i]*TRACK_HEIGHT/2); 
+  }
+
+  ctx.stroke();
 }
