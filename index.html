@@ -1,38 +1,44 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>AudioTech CyGO</title>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AudioTech CyGO</title>
 
-        <!-- FOUNDATION -->
-        <link rel="stylesheet" href="public/foundation/css/normalize.css">
-        <link rel="stylesheet" href="public/foundation/css/foundation.css">
-        <link rel="stylesheet" href="public/foundation/foundation-icons/foundation-icons.css">
-        <script src="public/foundation/js/vendor/custom.modernizr.js"></script>
-        <script src="public/foundation/js/vendor/jquery.js"></script>
-        <!-- END FOUNDATION -->
+  <!-- FOUNDATION -->
+  <link rel="stylesheet" href="public/foundation/css/normalize.css">
+  <link rel="stylesheet" href="public/foundation/css/foundation.css">
+  <link rel="stylesheet" href="public/foundation/foundation-icons/foundation-icons.css">
+  <script src="public/foundation/js/vendor/custom.modernizr.js"></script>
+  <script src="public/foundation/js/vendor/jquery.js"></script>
+  <!-- END FOUNDATION -->
+
+  <!-- Knob -->
+  <link rel="stylesheet" href="public/knob/assets/css/styles.css" />
+  <link rel="stylesheet" href="public/knob/assets/knobKnob/knobKnob.css" />
 
         <!--
             <script src="js/libs/jquery-1.9.0/jquery.min.js"></script>
-        -->
+          -->
 
-        <script src="public/js/subtrack.js"></script>
-        <script src="public/js/track.js"></script>
-        <script src="public/js/track_drawer.js"></script>
-        <script src="public/js/audio_graph.js"></script>
-        <script src="public/js/frequencies_drawer.js"></script>
-        <script>
-        window.requestAnimFrame = (function(callback) {
-          return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
-          function(callback) {
-            window.setTimeout(callback, 1000 / 60);
-          };
-        })();
-      </script>
-        
-        <style>
+          <script src="public/js/subtrack.js"></script>
+          <script src="public/js/track.js"></script>
+          <script src="public/js/track_drawer.js"></script>
+          <script src="public/js/audio_graph.js"></script>
+          <script src="public/js/frequencies_drawer.js"></script>
+          <script src="public/js/drag_drop.js"></script>
+
+          <script>
+            window.requestAnimFrame = (function(callback) {
+              return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
+              function(callback) {
+                window.setTimeout(callback, 1000 / 60);
+              };
+            })();
+          </script>
+
+          <style>
             .columns {
               padding-left:0;
             }
@@ -45,8 +51,8 @@
               left:0;
             }
             .sample {
-                border: solid white 1px;
-                background:grey;
+              border: solid white 1px;
+              background:grey;
             }
             .clickable:hover {
               cursor:pointer;
@@ -68,65 +74,101 @@
               top:0px;
               right:0px;
             }
-        </style>
-    </head>
-    <body ng-app ng-controller="PlayerCtrl">
-        <canvas id="canvas_fequencies_left" width="250" height="750"></canvas>
-        <canvas id="canvas_fequencies_right" width="250" height="750"></canvas>
+            .draggedOver {
+              background-color: red;
+            }
+          </style>
+        </head>
+        <body ng-app ng-controller="PlayerCtrl">
+          <canvas id="canvas_fequencies_left" width="250" height="750"></canvas>
+          <canvas id="canvas_fequencies_right" width="250" height="750"></canvas>
 
-        <div class="row">
-          <div class="small-3 columns">
-            <div class="panel" style="margin-top:23px;">
+          <div class="row">
+            <div class="small-3 columns">
+              <div class="panel" style="margin-top:23px;">
                 <div id="songs">
-                    <select ng-options='track as track.name for track in tracks'
-                        ng-model="selectedTrack" ></select>
+                  <h4>Charger un album</h4>
+                  <select ng-options='track as track.name for track in tracks'
+                  ng-model="selectedTrack" ></select>
                 </div>
+              </div>
             </div>
-          </div>
-          <div class="small-9 columns">
-            <h1>AudioTech CyGO</h1>
-            <button class="button small radius" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
+            <div class="small-9 columns">
+              <h1>AudioTech</h1>
+              <button class="button small radius" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
                 <i class="fi-play"></i> Play
-            </button>      
-            <button class="button small radius" ng-click="pause()" ng-show="pausable">
+              </button>      
+              <button class="button small radius" ng-click="pause()" ng-show="pausable">
                 <i class="fi-pause"></i> Pause
-            </button>
-            <button class="button small radius" id="bstop" ng-click="stop()" ng-disabled="!stoppable">
+              </button>
+              <button class="button small radius" id="bstop" ng-click="stop()" ng-disabled="!stoppable">
                 <i class="fi-stop"></i> Stop
-            </button>
-            Master Volume : <input type="range" id ="masterVolume" min="0" max="100" value="100" ng-model="volume">
+              </button>
+              <input style="display:none;" type="range" id ="masterVolume" min="0" max="100" value="100" ng-model="volume"> 
+            </div>
+            <section id="main" style="width: 250px; margin-left: 500px;">
+              <div id="bars">
+                <div id="control"></div>
+              </div>
+            </section>
           </div>
-        </div>
-        <div class="row">
-          <div class="small-3 columns">
-            <div id="tracks">
-              <div class="panel" ng-repeat="subtrack in selectedTrack.subtracks">
-                <label for="">{{subtrack.name}}</label>
-                <img ng-hide="subtrack.loaded" src="/public/image/ajax-loader.gif"/>
+          <div class="row">
+            <div class="small-3 columns">
+              <div id="tracks">
+                <div class="panel" ng-repeat="subtrack in selectedTrack.subtracks">
+                  <!--<img src="/public/image/{{subtrack.name}}.png"/>-->
+                  <label for="">{{subtrack.name}}</label>
+                  <img ng-hide="subtrack.loaded" src="/public/image/ajax-loader.gif"/>
+                  <div ng-show="subtrack.loaded">
+                    <i class="clickable fi-volume" ng-click="subtrack.mute()" ng-hide="subtrack.mutted"></i>
+                    <i class="clickable fi-volume-strike" ng-click="subtrack.unmute()" ng-show="subtrack.mutted"></i>
+                    <input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()">
+                  </div>
+
+                <!-- <div class="progress success">
+                    <span id="{{subtrack.name}}" class="meter" style="width: {{subtrack.progress}}%"></span>
+                  </div> -->
+
+                  <!--  Section d'ajout de music -->
+                </div>
+
+                <div class="panel" 
+                ondragenter="dragEnterHandler(event)" 
+                ondrop="dropHandler(event)" 
+                ondragover="dragOverHandler(event)" 
+                ondragleave="dragLeaveHandler(event)">
+
+                <label for=""> <h4>Envoi de music</h4></label>
+                <center><img ng-hide="subtrack.loaded" src="/public/image/upload.png"/></center>
                 <div ng-show="subtrack.loaded">
                   <i class="clickable fi-volume" ng-click="subtrack.mute()" ng-hide="subtrack.mutted"></i>
                   <i class="clickable fi-volume-strike" ng-click="subtrack.unmute()" ng-show="subtrack.mutted"></i>
-                  <input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()">
+                  <input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()" >
                 </div>
                 
                 <!-- <div class="progress success">
                     <span id="{{subtrack.name}}" class="meter" style="width: {{subtrack.progress}}%"></span>
-                </div> -->
+                  </div> -->
 
+                </div>
               </div>
             </div>
+            <div class="small-9 columns">
+              <canvas id="subtracks_canvas" width="720" height="0"></canvas>
+            </div>
           </div>
-          <div class="small-9 columns">
-            <canvas id="subtracks_canvas" width="720" height="0"></canvas>
-          </div>
-        </div>
-        
 
-        <script src="public/js/libs/angular.min.js"></script>
-        <script src="public/js/PlayerCtrl.js"></script>
 
-        <!-- Foundation boutstrap -->
-        <script src="public/foundation/js/foundation.min.js"></script>
-        <script>$(document).foundation();</script>
-    </body>
-</html>
+          <script src="public/js/libs/angular.min.js"></script>
+          <script src="public/js/PlayerCtrl.js"></script>
+
+          <!-- Foundation boutstrap -->
+          <script src="public/foundation/js/foundation.min.js"></script>
+
+          <!-- Knob -->
+          <script src="public/knob/assets/knobKnob/transform.js"></script>
+          <script src="public/knob/assets/knobKnob/knobKnob.jquery.js"></script>
+          <script src="public/knob/assets/js/script.js"></script>
+          <script>$(document).foundation();</script>
+        </body>
+        </html>
