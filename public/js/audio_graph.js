@@ -31,7 +31,6 @@ function AudioGraph(volume) {
         this.context.createBiquadFilter(),
         this.context.createBiquadFilter(),
         this.context.createBiquadFilter(),
-        this.context.createBiquadFilter(),
         this.context.createBiquadFilter()
     ];
 
@@ -46,11 +45,13 @@ function AudioGraph(volume) {
     this.equalizer[4].frequency.value = 10000;
     this.equalizer[4].type = 0;
 
-    this.equalizer[0].gain.value = 0;
-    this.equalizer[1].gain.value = 0;
+    this.equalizer[0].gain.value = 10;
+    this.equalizer[1].gain.value = 5;
     this.equalizer[2].gain.value = 0;
-    this.equalizer[3].gain.value = 0;
-    this.equalizer[4].gain.value = 0;
+    this.equalizer[3].gain.value = 5;
+    this.equalizer[4].gain.value = 10;
+
+    this.delay = this.context.createDelay();
 
     // Array of Subtracks to put in the graph
     this.subtracks = [];
@@ -110,9 +111,14 @@ AudioGraph.prototype.buildGraph = function() {
     this.equalizer[3].connect(this.analyser);
     this.equalizer[4].connect(this.analyser);
 
-    // Connect to the destination
+    // Connect to the delayNode
     //
+    this.analyser.connect(this.delay);
     this.analyser.connect(this.context.destination);
+    
+    // Connect the destination
+    //
+    this.delay.connect(this.context.destination);
 }
 
 /*
