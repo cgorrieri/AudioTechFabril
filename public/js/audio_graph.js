@@ -24,6 +24,37 @@ function AudioGraph(volume) {
     //
     this.analyser = this.context.createAnalyser();
 
+    // Créate a equalizer node
+    //
+    this.equalizer = [
+        this.context.createBiquadFilter(),
+        this.context.createBiquadFilter(),
+        this.context.createBiquadFilter(),
+        this.context.createBiquadFilter(),
+        this.context.createBiquadFilter(),
+        this.context.createBiquadFilter()
+    ];
+
+    this.equalizer[0].frequency.value = 60;
+    this.equalizer[0].type = 0;
+    this.equalizer[1].frequency.value = 250;
+    this.equalizer[1].type = 0;
+    this.equalizer[2].frequency.value = 1000;
+    this.equalizer[2].type = 0;
+    this.equalizer[3].frequency.value = 3500;
+    this.equalizer[3].type = 0;
+    this.equalizer[4].frequency.value = 10000;
+    this.equalizer[4].type = 0;
+    this.equalizer[5].frequency.value = 20000;
+    this.equalizer[5].type = 0;
+
+    this.equalizer[0].gain.value = 1;
+    this.equalizer[1].gain.value = 1;
+    this.equalizer[2].gain.value = 1;
+    this.equalizer[3].gain.value = 1;
+    this.equalizer[4].gain.value = 1;
+    this.equalizer[5].gain.value = 1;
+
     // Array of Subtracks to put in the graph
     this.subtracks = [];
 
@@ -65,13 +96,23 @@ AudioGraph.prototype.buildGraph = function() {
         // Connects all track volume nodes a single master volume node
         subtrack.volumeNode.connect(thus.masterVolumeNode);
     });
-    // Connect the analyser node
+
+    // Connect the equalizer node
     //
-    thus.masterVolumeNode.connect(this.analyser);
+    this.masterVolumeNode.connect(this.analyser);
+
+    // Connect the analyser
+    //
+    this.analyser.connect(this.context.destination);
+/*  this.equalizer[0].connect(this.equalizer[1]);
+    this.equalizer[1].connect(this.equalizer[2]);
+    this.equalizer[2].connect(this.equalizer[3]);
+    this.equalizer[3].connect(this.equalizer[4]);
+    this.equalizer[4].connect(this.equalizer[5]);*/
 
     // Connect the destination node
     //
-    this.analyser.connect(this.context.destination);
+    //this.equalizer[0].connect(this.context.destination);
 }
 
 /*

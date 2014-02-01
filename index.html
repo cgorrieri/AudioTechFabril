@@ -18,6 +18,11 @@
   <link rel="stylesheet" href="public/knob/assets/css/styles.css" />
   <link rel="stylesheet" href="public/knob/assets/knobKnob/knobKnob.css" />
 
+  <!-- Kiev 
+  <script type="text/javascript" src="https://raw.github.com/EightMedia/hammer.js/v1.0.5/dist/hammer.js"></script>
+  <script type="text/javascript" src="public/kiev/dist/kievII.min.js"></script>
+  <script type="text/javascript" src="public/kiev/tests/ClickBar/clickbartest.js"></script>
+-->
         <!--
             <script src="js/libs/jquery-1.9.0/jquery.min.js"></script>
           -->
@@ -28,6 +33,8 @@
           <script src="public/js/audio_graph.js"></script>
           <script src="public/js/frequencies_drawer.js"></script>
           <script src="public/js/drag_drop.js"></script>
+
+          <script src="public/js/dbpedia.js"></script>
 
           <script>
             window.requestAnimFrame = (function(callback) {
@@ -106,11 +113,20 @@
               </button>
               <input style="display:none;" type="range" id ="masterVolume" min="0" max="100" value="100" ng-model="volume"> 
             </div>
+
+            <!-- Bouton rotatif du volume -->
             <section id="main" style="width: 250px; margin-left: 500px;">
               <div id="bars">
                 <div id="control"></div>
               </div>
             </section>
+
+            <div class="panel" id="description"><h3>{{selectedTrack.title}}</h3><br>{{selectedTrack.description}}</div>
+            
+            <!--
+            <canvas id='clickbar_canvas' width='200' height='100'></canvas>
+            -->
+
           </div>
           <div class="row">
             <div class="small-3 columns">
@@ -164,11 +180,17 @@
 
           <!-- Foundation boutstrap -->
           <script src="public/foundation/js/foundation.min.js"></script>
+          <script>$(document).foundation();</script>
 
           <!-- Knob -->
           <script src="public/knob/assets/knobKnob/transform.js"></script>
           <script src="public/knob/assets/knobKnob/knobKnob.jquery.js"></script>
           <script src="public/knob/assets/js/script.js"></script>
-          <script>$(document).foundation();</script>
+
+          <!-- kiev
+          <script type='text/javascript'>
+            ClickBarTest.init(document.getElementById('clickbar_canvas'));
+          </script>
+          -->
         </body>
         </html>

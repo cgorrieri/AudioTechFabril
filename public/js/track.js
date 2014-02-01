@@ -1,10 +1,13 @@
 function Track(name) {
     this.loaded = false;
     this.name = name;
+    this.title = "";
+    this.description = "";
     this.subtracks = [];
 }
 
 Track.prototype.load = function(callback) {
+
     if(!this.loaded) {
         // load songs
         var xhr = new XMLHttpRequest();

@@ -159,3 +159,7 @@ Player.prototype.stop = function() {
     this.buttonStop.disabled = true;
     this.stopped = true;
 }
+
+Player.prototype.setDescription = function(text) {
+   $("#description").html(text);
+}

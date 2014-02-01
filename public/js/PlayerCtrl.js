@@ -75,6 +75,15 @@ function PlayerCtrl ($scope, $http) {
 
 	$scope.$watch("selectedTrack",function() {
 		if(!$scope.selectedTrack) return;
+
+    getTitle($scope.selectedTrack.name, function(value) {
+      $scope.selectedTrack.title = value;
+    });
+
+    getAbstract($scope.selectedTrack.name, function(value) {
+      $scope.selectedTrack.description = value;
+    });
+
     $scope.selectedTrack.load(function(subtracks) {
     	$scope.$apply();
       // Counter to watch the evolution of the load
@@ -98,7 +107,6 @@ function PlayerCtrl ($scope, $http) {
 	});
 
 	$scope.$watch("volume",function() {
-		console.log($scope.volume/100.0);
 		$scope.audioGraph.changeMasterVolume($scope.volume/100.0);
 	})
 
