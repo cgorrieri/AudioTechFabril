@@ -45,15 +45,12 @@ function AudioGraph(volume) {
     this.equalizer[3].type = 0;
     this.equalizer[4].frequency.value = 10000;
     this.equalizer[4].type = 0;
-    this.equalizer[5].frequency.value = 20000;
-    this.equalizer[5].type = 0;
 
-    this.equalizer[0].gain.value = 1;
-    this.equalizer[1].gain.value = 1;
-    this.equalizer[2].gain.value = 1;
-    this.equalizer[3].gain.value = 1;
-    this.equalizer[4].gain.value = 1;
-    this.equalizer[5].gain.value = 1;
+    this.equalizer[0].gain.value = 0;
+    this.equalizer[1].gain.value = 0;
+    this.equalizer[2].gain.value = 0;
+    this.equalizer[3].gain.value = 0;
+    this.equalizer[4].gain.value = 0;
 
     // Array of Subtracks to put in the graph
     this.subtracks = [];
@@ -97,22 +94,25 @@ AudioGraph.prototype.buildGraph = function() {
         subtrack.volumeNode.connect(thus.masterVolumeNode);
     });
 
-    // Connect the equalizer node
+    // Connect the analyser to the equaliser
     //
-    this.masterVolumeNode.connect(this.analyser);
+    this.masterVolumeNode.connect(this.equalizer[0]);
+    this.masterVolumeNode.connect(this.equalizer[1]);
+    this.masterVolumeNode.connect(this.equalizer[2]);
+    this.masterVolumeNode.connect(this.equalizer[3]);
+    this.masterVolumeNode.connect(this.equalizer[4]);
 
-    // Connect the analyser
+    // Connect to the analyser
+    //
+    this.equalizer[0].connect(this.analyser);
+    this.equalizer[1].connect(this.analyser);
+    this.equalizer[2].connect(this.analyser);
+    this.equalizer[3].connect(this.analyser);
+    this.equalizer[4].connect(this.analyser);
+
+    // Connect to the destination
     //
     this.analyser.connect(this.context.destination);
-/*  this.equalizer[0].connect(this.equalizer[1]);
-    this.equalizer[1].connect(this.equalizer[2]);
-    this.equalizer[2].connect(this.equalizer[3]);
-    this.equalizer[3].connect(this.equalizer[4]);
-    this.equalizer[4].connect(this.equalizer[5]);*/
-
-    // Connect the destination node
-    //
-    //this.equalizer[0].connect(this.context.destination);
 }
 
 /*

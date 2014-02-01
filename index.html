@@ -84,6 +84,11 @@
             .draggedOver {
               background-color: red;
             }
+            .equalizer {
+              width: 150px;
+              height: 10px;
+              -moz-transfrom: rotate(270deg);
+            }
           </style>
         </head>
         <body ng-app ng-controller="PlayerCtrl">
@@ -123,9 +128,10 @@
 
             <div class="panel" id="description"><h3>{{selectedTrack.title}}</h3><br>{{selectedTrack.description}}</div>
             
-            <!--
+            <!-- Control bar 
             <canvas id='clickbar_canvas' width='200' height='100'></canvas>
             -->
+            <input style="diplay:block;" class="equalizer" type="range" min="0" max="10" ng-repeat="equa in audioGraph.equalizer" ng-model="equa.gain.value">
 
           </div>
           <div class="row">
@@ -191,6 +197,6 @@
           <script type='text/javascript'>
             ClickBarTest.init(document.getElementById('clickbar_canvas'));
           </script>
-          -->
+           -->
         </body>
         </html>

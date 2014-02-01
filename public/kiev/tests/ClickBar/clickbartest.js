@@ -22,9 +22,10 @@ var ClickBarTest = {
             isListening: true
         };
         
-        for (var i = 0; i < 6; i += 1) {
+        for (var i = 0; i < 5; i += 1) {
             clickBarArgs.ID = "testClickBar" + i;
             clickBarArgs.left = (i * barWidth + (i+1) * spaceWidth);
+            clickBarArgs.num = i;
             this.ui.addElement(new K2.ClickBar(clickBarArgs));
             this.ui.setValue ({elementID: clickBarArgs.ID, slot: 'barvalue', value: (0.1 * i) + 0.1});
         }        
