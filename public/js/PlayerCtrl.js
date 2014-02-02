@@ -83,6 +83,7 @@ function PlayerCtrl ($scope, $http) {
       $scope.selectedTrack.description = value;
     });
 
+    $scope.stop();
     $scope.selectedTrack.load(function(subtracks) {
     	$scope.$apply();
       // Counter to watch the evolution of the load
