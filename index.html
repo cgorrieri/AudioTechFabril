@@ -23,6 +23,12 @@
   <script type="text/javascript" src="public/kiev/dist/kievII.min.js"></script>
   <script type="text/javascript" src="public/kiev/tests/ClickBar/clickbartest.js"></script>
 -->
+
+<!-- Audio record -->
+<script src="public/js/mainAudioRecord.js"></script>
+<script src="public/js/recorder.js"></script>
+<script src="public/js/audiodisplay.js"></script>
+
         <!--
             <script src="js/libs/jquery-1.9.0/jquery.min.js"></script>
           -->
@@ -92,8 +98,8 @@
           </style>
         </head>
         <body ng-app ng-controller="PlayerCtrl">
-          <canvas id="canvas_fequencies_left" width="250" height="750"></canvas>
-          <canvas id="canvas_fequencies_right" width="250" height="750"></canvas>
+          <canvas id="canvas_fequencies_left" width="250" height="750" style="position:fixed;"></canvas>
+          <canvas id="canvas_fequencies_right" width="250" height="750" style="position:fixed;"></canvas>
 
           <div class="row">
             <div class="small-3 columns">
@@ -107,6 +113,7 @@
             </div>
             <div class="small-9 columns">
               <h1>AudioTech</h1>
+              <!--
               <button class="button small radius" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
                 <i class="fi-play"></i> Play
               </button>      
@@ -116,6 +123,11 @@
               <button class="button small radius" id="bstop" ng-click="stop()" ng-disabled="!stoppable">
                 <i class="fi-stop"></i> Stop
               </button>
+              -->
+              <img src="public/image/player/play-64.png" style="cursor:pointer;" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
+              <img src="public/image/player/pause-64.png" style="cursor:pointer;" ng-click="pause()" ng-show="pausable">
+              <img src="public/image/player/stop-64.png" style="cursor:pointer;" ng-click="stop()" ng-disabled="!stoppable">
+              
               <input style="display:none;" type="range" id ="masterVolume" min="0" max="100" value="100" ng-model="volume"> 
             </div>
 
@@ -125,85 +137,108 @@
                 <div id="control"></div>
               </div>
             </section>
+          </div>
 
-            
+        <div class="row">
+          <div class="small-3 columns">
             <!-- Control bar 
             <canvas id='clickbar_canvas' width='200' height='100'></canvas>
             -->
-            <div class="panel" style="width:23%;float:left;">
+            <div class="panel" style="width:235px;float:left;">
               <div ng-repeat="equa in audioGraph.equalizer">
-              <label>{{equa.frequency.value}}</label>
-              <input style="diplay:block;" class="equalizer" type="range" min="0" max="10" val="0"  ng-model="equa.gain.value">
+                <label>{{equa.frequency.value}}</label>
+                <input style="diplay:block;" class="equalizer" type="range" min="0" max="10" val="0"  ng-model="equa.gain.value">
               </div>
               <label>delay</label>
               <input style="diplay:block;" class="equalizer" type="range" min="0" max="10" ng-model="audioGraph.delay.delayTime.value">
             </div>
-            <div class="panel" style="width: 72%;position: relative;margin-left: 25%;height: 271px;overflow-y: scroll;" id="description"><h3>{{selectedTrack.title}}</h3><br>{{selectedTrack.description}}</div>
-  
           </div>
-          <div class="row">
-            <div class="small-3 columns">
-              <div id="tracks">
-                <div class="panel" ng-repeat="subtrack in selectedTrack.subtracks">
-                  <!--<img src="/public/image/{{subtrack.name}}.png"/>-->
-                  <label for="">{{subtrack.name}}</label>
-                  <img ng-hide="subtrack.loaded" src="/public/image/ajax-loader.gif"/>
-                  <div ng-show="subtrack.loaded">
-                    <i class="clickable fi-volume" ng-click="subtrack.mute()" ng-hide="subtrack.mutted"></i>
-                    <i class="clickable fi-volume-strike" ng-click="subtrack.unmute()" ng-show="subtrack.mutted"></i>
-                    <input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()">
-                  </div>
+          <div class="small-9 columns">
+            <div class="panel" style="width: 721px;height: 271px;overflow-y: scroll;" id="description"><h3>{{selectedTrack.title}}</h3><br>{{selectedTrack.description}}</div>
+          </div>
+        </div>
 
-                <!-- <div class="progress success">
-                    <span id="{{subtrack.name}}" class="meter" style="width: {{subtrack.progress}}%"></span>
-                  </div> -->
-
-                  <!--  Section d'ajout de music -->
-                </div>
-
-                <div class="panel" 
-                ondragenter="dragEnterHandler(event)" 
-                ondrop="dropHandler(event)" 
-                ondragover="dragOverHandler(event)" 
-                ondragleave="dragLeaveHandler(event)">
-
-                <label for=""> <h4>Envoi de music</h4></label>
-                <center><img ng-hide="subtrack.loaded" src="/public/image/upload.png"/></center>
+        <div class="row">
+          <div class="small-3 columns">
+            <div id="tracks">
+              <div class="panel" ng-repeat="subtrack in selectedTrack.subtracks">
+                <!--<img src="/public/image/{{subtrack.name}}.png"/>-->
+                <label for="">{{subtrack.name}}</label>
+                <img ng-hide="subtrack.loaded" src="/public/image/ajax-loader.gif"/>
                 <div ng-show="subtrack.loaded">
                   <i class="clickable fi-volume" ng-click="subtrack.mute()" ng-hide="subtrack.mutted"></i>
                   <i class="clickable fi-volume-strike" ng-click="subtrack.unmute()" ng-show="subtrack.mutted"></i>
-                  <input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()" >
+                  <input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()">
                 </div>
-                
+
                 <!-- <div class="progress success">
                     <span id="{{subtrack.name}}" class="meter" style="width: {{subtrack.progress}}%"></span>
                   </div> -->
-
-                </div>
               </div>
             </div>
-            <div class="small-9 columns">
-              <canvas id="subtracks_canvas" width="720" height="0"></canvas>
+          </div>
+          <div class="small-9 columns">
+            <canvas id="subtracks_canvas" width="720" height="0"></canvas>
+          </div>
+        </div>
+        <div class="row">
+          <div class="small-3 columns">
+            <div class="panel">
+                <label for=""> <h4>Enregistrement</h4></label>
+                <canvas id="analyser" width="125" height="80" style="background-color:black;"></canvas>
+                <div style="float:right; cursor:pointer;">
+                  <img src="public/image/player/record.png" style="display: block;" onclick="toggleRecording(this);">
+                  <img src="public/image/player/dl.png" onclick="saveAudio();" style="display:none;" id="btn_dl">
+                </div>
             </div>
           </div>
+          <div class="small-9 columns">
+            <canvas id="wavedisplay" width="720" height="160" style="background-color:black;"></canvas>
+          </div>
+        </div>
+        <div class="row">
+          <div class="small-3 columns">
+            <div class="panel" 
+              ondragenter="dragEnterHandler(event)" 
+              ondrop="dropHandler(event)" 
+              ondragover="dragOverHandler(event)" 
+              ondragleave="dragLeaveHandler(event)">
+
+              <label for=""> <h4>Envoi de music</h4></label>
+              <center><img ng-hide="subtrack.loaded" src="/public/image/player/upload.png"/></center>
+              <div ng-show="subtrack.loaded">
+                <i class="clickable fi-volume" ng-click="subtrack.mute()" ng-hide="subtrack.mutted"></i>
+                <i class="clickable fi-volume-strike" ng-click="subtrack.unmute()" ng-show="subtrack.mutted"></i>
+                <input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()" >
+              </div>
 
 
-          <script src="public/js/libs/angular.min.js"></script>
-          <script src="public/js/PlayerCtrl.js"></script>
+              <!-- <div class="progress success">
+                  <span id="{{subtrack.name}}" class="meter" style="width: {{subtrack.progress}}%"></span>
+                </div> -->
+            </div>
+          </div>
+          <div class="small-9 columns">
+            <canvas id="wavesend" width="720" height="140" style="background-color:black;"></canvas>
+          </div>
+        </div>
 
-          <!-- Foundation boutstrap -->
-          <script src="public/foundation/js/foundation.min.js"></script>
-          <script>$(document).foundation();</script>
+        <script src="public/js/libs/angular.min.js"></script>
+        <script src="public/js/PlayerCtrl.js"></script>
 
-          <!-- Knob -->
-          <script src="public/knob/assets/knobKnob/transform.js"></script>
-          <script src="public/knob/assets/knobKnob/knobKnob.jquery.js"></script>
-          <script src="public/knob/assets/js/script.js"></script>
+        <!-- Foundation boutstrap -->
+        <script src="public/foundation/js/foundation.min.js"></script>
+        <script>$(document).foundation();</script>
+
+        <!-- Knob -->
+        <script src="public/knob/assets/knobKnob/transform.js"></script>
+        <script src="public/knob/assets/knobKnob/knobKnob.jquery.js"></script>
+        <script src="public/knob/assets/js/script.js"></script>
 
           <!-- kiev
           <script type='text/javascript'>
             ClickBarTest.init(document.getElementById('clickbar_canvas'));
           </script>
-           -->
-        </body>
-        </html>
+        -->
+      </body>
+      </html>
