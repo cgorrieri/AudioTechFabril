@@ -12,6 +12,7 @@ function PlayerCtrl ($scope, $http) {
 	$scope.volume = 100;
 
   $scope.canvas = document.querySelector("#subtracks_canvas");
+  $scope.trackDrawer = new TrackDrawer($scope.canvas, 80, 20);
 
   $scope.canvas_frequence_left = document.querySelector("#canvas_fequencies_left");
   $scope.canvas_frequence_right = document.querySelector("#canvas_fequencies_right");
@@ -38,22 +39,20 @@ function PlayerCtrl ($scope, $http) {
   // Animatite function, periodicaly call
   //
   $scope.animate = function() {
-    // update canvas only if the song is playing
-    // if($scope.pausable) {
-      // update
-      var pos = $scope.audioGraph.getPercent()/100 * $scope.frontCanvas.width;
+    // update
+    var pos = $scope.audioGraph.getPercent()/100 * $scope.frontCanvas.width;
 
-      // clear
-      $scope.frontCtx.clearRect(0, 0, $scope.frontCanvas.width, $scope.frontCanvas.height);
+    // clear
+    $scope.frontCtx.clearRect(0, 0, $scope.frontCanvas.width, $scope.frontCanvas.height);
 
-      // draw stuff
-      $scope.frontCtx.beginPath();
-      $scope.frontCtx.rect(pos-3, 0, 3, $scope.frontCanvas.height);
-      $scope.frontCtx.fillStyle = 'red';
-      $scope.frontCtx.fill();
+    // draw stuff
+    $scope.frontCtx.beginPath();
+    $scope.frontCtx.rect(pos-3, 0, 3, $scope.frontCanvas.height);
+    $scope.frontCtx.fillStyle = 'red';
+    $scope.frontCtx.fill();
 
-      drawFrequencies($scope.audioGraph.analyser, $scope.canvas_frequence_left, $scope.canvas_frequence_right);
-    // }
+    drawFrequencies($scope.audioGraph.analyser, $scope.canvas_frequence_left, $scope.canvas_frequence_right);
+
     // request new frame
     requestAnimFrame(function() {
       $scope.animate();
@@ -100,7 +99,7 @@ function PlayerCtrl ($scope, $http) {
             $scope.audioGraph.setSubtracks($scope.selectedTrack.subtracks);
             $scope.enablePlay();
           }
-          draw_track(subtrack.buffer, $scope.canvas, i);
+          $scope.trackDrawer.draw_track(subtrack.buffer, i);
         });
       });
 		});
