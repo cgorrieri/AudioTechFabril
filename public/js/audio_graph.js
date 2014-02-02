@@ -126,14 +126,16 @@ AudioGraph.prototype.buildGraph = function() {
 * - subtracks: Array of Subtrack object
 */
 AudioGraph.prototype.setSubtracks = function(subtracks) {
+  // Reset previous track
 	this.subtracks.forEach(function (subtrack) {
     subtrack.volumeNode = undefined;
     subtrack.volume = 100;
   });
+  // Reset nodes and time
   this.graphNodes = [];
 	this.trackVolumeNodes = [];
 	this.elapsedTimeSinceStart = 0;
-	
+	// Set new tracks
 	this.subtracks = subtracks;
   this.duration = subtracks[0].buffer.duration;
 };

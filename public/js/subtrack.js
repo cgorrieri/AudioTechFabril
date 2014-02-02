@@ -19,6 +19,7 @@ function SubTrack(name, url) {
 }
 
 SubTrack.prototype.load = function(audioGraph, callbackLoad, callbackError) {
+    // If not loaded
     if(!this.loaded) {
         var request = new XMLHttpRequest();
         request.open("GET", this.url, true);
@@ -56,6 +57,11 @@ SubTrack.prototype.load = function(audioGraph, callbackLoad, callbackError) {
         }
 
         request.send();
+    } 
+    // If already loaded
+    else {
+        this.setProgress(100);
+        if(callbackLoad) callbackLoad(this);
     }
 }
 

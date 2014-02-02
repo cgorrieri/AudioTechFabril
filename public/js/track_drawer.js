@@ -1,23 +1,30 @@
-var TRACK_HEIGHT = 80;
+function TrackDrawer(canvas, track_height, outline_height) {
+  this.track_height = track_height;
+  this.outline_height = outline_height;
+  // Setup canvas
+  this.canvas = canvas;
+  this.ctx_2D=this.canvas.getContext("2d");
+  this.ctx_2D.strokeStyle = '#202020';
+  this.ctx_2D.lineWidth = 1;
+}
 
-// Draw a track in a canvas
+// Draw a track in the canvas
 // track: an AudioBuffer object
-// canvas: reference to a canvas object
 // position: position of the track in the list (start to 0)
-function draw_track(track, canvas, position) {
+TrackDrawer.prototype.draw_track = function(track, position) {
 	
 	// init context to draw on the canvas
 
-	var baseHeight = position*(TRACK_HEIGHT + 20)+TRACK_HEIGHT/2;
+	var baseHeight = position*(this.track_height + this.outline_height)+this.track_height/2;
 
-	// Pas entre chaque sample
-	var pas = canvas.width/track.length;
+	// Step between samples
+	var pas = this.canvas.width/track.length;
 
   var index,i,j,buffer;
 
 	// initiate samples
 	var samples = [];
-  for(i = 0; i<canvas.width; i++) {
+  for(i = 0; i<this.canvas.width; i++) {
     samples[i]=0;
   }
 
@@ -29,20 +36,15 @@ function draw_track(track, canvas, position) {
       index = parseInt(i*pas);
       samples[index] = Math.max(samples[index], buffer[i]);
   	}
-  }
+  } 
 
-  var ctx=canvas.getContext("2d");
-
-  ctx.strokeStyle = '#202020';
-  ctx.lineWidth = 1;
-
-  ctx.beginPath();
+  this.ctx_2D.beginPath();
 
   // Draw samples
   for(i = 0; i < samples.length; i++) {
-    ctx.moveTo(i+0.5, baseHeight - samples[i]*TRACK_HEIGHT/2 - 1);
-    ctx.lineTo(i+0.5, baseHeight + samples[i]*TRACK_HEIGHT/2); 
+    this.ctx_2D.moveTo(i+0.5, baseHeight - samples[i]*this.track_height/2 - 1);
+    this.ctx_2D.lineTo(i+0.5, baseHeight + samples[i]*this.track_height/2); 
   }
 
-  ctx.stroke();
+  this.ctx_2D.stroke();
 }
