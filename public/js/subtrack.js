@@ -30,7 +30,9 @@ SubTrack.prototype.loadFromBuffer = function(arrayBuffer, audioGraph, callbackLo
             thus.buffer = buffer;
             thus.loaded = true;
             if(callbackLoad) callbackLoad(thus);
-        },callbackError
+        },function() {
+          callbackError("Not an AudioBuffer")
+        }
     );
 }
 

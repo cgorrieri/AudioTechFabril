@@ -13,7 +13,7 @@ audio_app.controller("PlayerCtrl", function ($scope, $http) {
 
   // Vitesse de lecture
   //
-  $scope.speed = 1;
+  $scope.speed = 25;
 
 	$scope.volume = 100;
 
@@ -152,8 +152,7 @@ audio_app.controller("PlayerCtrl", function ($scope, $http) {
 	}
   
   $scope.$watch("speed", function() {
-    $scope.audioGraph.speed = $scope.speed;
-    $scope.audioGraph.setSpeed();
+    $scope.audioGraph.setSpeed($scope.speed/25);
   }, true);
 
   $scope.setSubtracks = function() {
@@ -182,6 +181,14 @@ audio_app.controller("PlayerCtrl", function ($scope, $http) {
       $scope.setSubtracks();
       $scope.enablePlay();
     });
+  }
+
+  $scope.format_number = function(n,d){
+    x=(''+n).length;
+    p=Math.pow;
+    d=p(10,d);
+    x-=x%3
+    return Math.round(n*d/p(10,x))/d+" kMGTPE"[x/3]
   }
 });
 

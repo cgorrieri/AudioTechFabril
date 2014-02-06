@@ -22,36 +22,19 @@ function AudioGraph(volume) {
     this.masterVolumeNode = this.context.createGain();
     this.changeMasterVolume(volume);
 
-    // Create à analyser node
-    //
+    // Create an analyser node
     this.analyser = this.context.createAnalyser();
 
     // Créate a equalizer node
-    //
-    this.equalizer = [
-        this.context.createBiquadFilter(),
-        this.context.createBiquadFilter(),
-        this.context.createBiquadFilter(),
-        this.context.createBiquadFilter(),
-        this.context.createBiquadFilter()
-    ];
-
-    this.equalizer[0].frequency.value = 60;
-    this.equalizer[0].type = 0;
-    this.equalizer[1].frequency.value = 250;
-    this.equalizer[1].type = 0;
-    this.equalizer[2].frequency.value = 1000;
-    this.equalizer[2].type = 0;
-    this.equalizer[3].frequency.value = 3500;
-    this.equalizer[3].type = 0;
-    this.equalizer[4].frequency.value = 10000;
-    this.equalizer[4].type = 0;
-
-    this.equalizer[0].gain.value = 10;
-    this.equalizer[1].gain.value = 5;
-    this.equalizer[2].gain.value = 0;
-    this.equalizer[3].gain.value = 5;
-    this.equalizer[4].gain.value = 10;
+    this.equalizer = [];
+    var thus = this;
+    [60, 170, 350, 1000, 3500, 10000].forEach(function(freq, i) {
+      var eq = thus.context.createBiquadFilter();
+      eq.frequency.value = freq;
+      eq.type = "peaking";
+      eq.gain.value = 0;
+      thus.equalizer.push(eq);
+    })
 
     this.delay = this.context.createDelay();
 
@@ -97,29 +80,22 @@ AudioGraph.prototype.buildGraph = function() {
         subtrack.volumeNode.connect(thus.masterVolumeNode);
     });
 
-    // Connect the analyser to the equaliser
-    //
+    // Connect equalizers in serie
     this.masterVolumeNode.connect(this.equalizer[0]);
-    this.masterVolumeNode.connect(this.equalizer[1]);
-    this.masterVolumeNode.connect(this.equalizer[2]);
-    this.masterVolumeNode.connect(this.equalizer[3]);
-    this.masterVolumeNode.connect(this.equalizer[4]);
-
+    console.log(this.equalizer.length);
+    for(var i = 0; i < this.equalizer.length - 1; i++) {
+      this.equalizer[i].connect(this.equalizer[i+1]);
+    }
     // Connect to the analyser
-    //
-    this.equalizer[0].connect(this.analyser);
-    this.equalizer[1].connect(this.analyser);
-    this.equalizer[2].connect(this.analyser);
-    this.equalizer[3].connect(this.analyser);
-    this.equalizer[4].connect(this.analyser);
+    this.equalizer[this.equalizer.length - 1].connect(this.analyser);
+
+    //this.masterVolumeNode.connect(this.analyser);
 
     // Connect to the delayNode
-    //
     this.analyser.connect(this.delay);
-    this.analyser.connect(this.context.destination);
+    //this.analyser.connect(this.context.destination);
     
     // Connect the destination
-    //
     this.delay.connect(this.context.destination);
 }
 
@@ -197,17 +173,18 @@ AudioGraph.prototype.getPercent = function() {
       case STOPPED:
         return 0;
       case PAUSED:
-        return this.elapsedTimeSinceStart/this.duration*100;
+        return this.elapsedTimeSinceStart*this.speed/this.duration*100;
       case PLAYING:
         var timeSinseStart = this.context.currentTime - this.lastTime;
-        return timeSinseStart/this.duration*100;
+        return timeSinseStart*this.speed/this.duration*100;
     }
     return 0;
 }
 
-AudioGraph.prototype.setSpeed = function() {
-    var thus= this;
+// TODO update time on change speed
+AudioGraph.prototype.setSpeed = function(speed) {
+    this.speed = speed;
     this.graphNodes.forEach(function(node,i) {
-      node.playbackRate.value = thus.speed;
+      node.playbackRate.value = speed;
     });
 }
