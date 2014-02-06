@@ -18,6 +18,22 @@ function SubTrack(name, url) {
     this.volumeNode = undefined;
 }
 
+SubTrack.prototype.loadFromBuffer = function(arrayBuffer, audioGraph, callbackLoad, callbackError) {
+    var thus = this;
+    audioGraph.context.decodeAudioData(
+        arrayBuffer,
+        function(buffer) {
+            if (!buffer) {
+                alert('error decoding buffer');
+                return;
+            }
+            thus.buffer = buffer;
+            thus.loaded = true;
+            if(callbackLoad) callbackLoad(thus);
+        },callbackError
+    );
+}
+
 SubTrack.prototype.load = function(audioGraph, callbackLoad, callbackError) {
     // If not loaded
     if(!this.loaded) {
@@ -30,21 +46,7 @@ SubTrack.prototype.load = function(audioGraph, callbackLoad, callbackError) {
 
         request.onload = function() {
             // Asynchronously decode the audio file data in request.response
-            audioGraph.context.decodeAudioData(
-                    request.response,
-                    function(buffer) {
-                        if (!buffer) {
-                            alert('error decoding file data: ' + url);
-                            return;
-                        }
-                        thus.buffer = buffer;
-                        thus.loaded = true;
-                        if(callbackLoad) callbackLoad(thus);
-                    },
-                    function(error) {
-                        console.error('decodeAudioData error', error);
-                    }
-            );
+            thus.loadFromBuffer(request.response, audioGraph, callbackLoad, callbackError);
         }
 
         request.onprogress = function(e) {
@@ -53,7 +55,7 @@ SubTrack.prototype.load = function(audioGraph, callbackLoad, callbackError) {
         }
         request.onerror = function() {
             //alert('BufferLoader: XHR error');
-            callbackError();
+            callbackError("error on network access");
         }
 
         request.send();

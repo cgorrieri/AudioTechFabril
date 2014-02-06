@@ -24,11 +24,11 @@
 	<script type="text/javascript" src="public/kiev/tests/ClickBar/clickbartest.js"></script>
 		-->
 
-		<!-- Audio record -->
-		<script src="public/js/mainAudioRecord.js"></script>
-		<script src="public/js/recorder.js"></script>
-		<script src="public/js/audiodisplay.js"></script>
-		<script src="public/js/libs/jquery-ui.js"></script>
+  <!-- Audio record -->
+  <script src="public/js/mainAudioRecord.js"></script>
+  <script src="public/js/recorder.js"></script>
+  <script src="public/js/audiodisplay.js"></script>
+  <!-- <script src="public/js/libs/jquery-ui.js"></script> -->
 
 		<!--
 			<script src="js/libs/jquery-1.9.0/jquery.min.js"></script>
@@ -56,14 +56,14 @@
 			.columns {
 				padding-left:0;
 			}
-			#subtracks_canvas {
-				background:rgb(242, 242, 242);
-			}
-			#canvasFront {
-				position:absolute;
-				top:0;
-				left:0;
-			}
+			#subtracks_canvas, #uploaded_subtracks_canvas {
+        background:rgb(242, 242, 242);
+      }
+      #front_subtracks_canvas, #front_uploaded_subtracks_canvas {
+        position:absolute;
+        top:0;
+        left:0;
+      }
 			.sample {
 				border: solid white 1px;
 				background:grey;
@@ -109,6 +109,25 @@
 			#menu_float #boutons {
 				margin-left: 30%;
 			}
+      button, button:focus, button:hover {
+        /*Reset's every elements apperance*/
+        background: none repeat scroll 0 0 transparent;
+        border: medium none;
+        border-spacing: 0;
+        margin: 0;
+        padding: 0;
+      }
+      button[disabled] {
+        background: none repeat scroll 0 0 transparent !important;
+        opacity:0.7;
+      }
+      #rotate_button {
+        width: 250px;
+        margin-left: 500px;
+        position:absolute;
+        top:0;
+        right:50px;
+      }
 		</style>
 		<script>
 			$(function(){
@@ -123,19 +142,26 @@
 			});
 		</script>
 	</head>
-	<body ng-app ng-controller="PlayerCtrl">
+	<body ng-app="AudioApp" ng-controller="PlayerCtrl">
 		<canvas id="canvas_fequencies_left" width="250" height="750" style="position:fixed;"></canvas>
 		<canvas id="canvas_fequencies_right" width="250" height="750" style="position:fixed;"></canvas>
 		
 		<div id="menu_float">
 			<div id="boutons">
 				{{selectedTrack.title}}
-				<img src="public/image/player/play-64.png" style="cursor:pointer;" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
-				<img src="public/image/player/pause-64.png" style="cursor:pointer;" ng-click="pause()" ng-show="pausable">
-				<img src="public/image/player/stop-64.png" style="cursor:pointer;" ng-click="stop()" ng-disabled="!stoppable">
+				<button ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
+          <img src="public/image/player/play-64.png" />
+        </button>      
+        <button ng-click="pause()" ng-show="pausable">
+          <img src="public/image/player/pause-64.png" />
+        </button>
+        <button id="bstop" ng-click="stop()" ng-disabled="!stoppable">
+          <img src="public/image/player/stop-64.png" />
+        </button>
 				<input type="range" id ="masterVolume" min="0" max="100" value="100" ng-model="volume"> 
 			</div>
 		</div>
+
 
 		<div class="row">
 			<div class="small-3 columns">
@@ -149,36 +175,32 @@
 			</div>
 			<div class="small-9 columns" id="audio_replace">
 				<h1 id="title">AudioTech</h1>
-				<!--
-				<button class="button small radius" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
-					<i class="fi-play"></i> Play
+				
+				<button ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
+					<img src="public/image/player/play-64.png" />
 				</button>      
-				<button class="button small radius" ng-click="pause()" ng-show="pausable">
-					<i class="fi-pause"></i> Pause
+				<button ng-click="pause()" ng-show="pausable">
+					<img src="public/image/player/pause-64.png" />
 				</button>
-				<button class="button small radius" id="bstop" ng-click="stop()" ng-disabled="!stoppable">
-					<i class="fi-stop"></i> Stop
+				<button id="bstop" ng-click="stop()" ng-disabled="!stoppable">
+					<img src="public/image/player/stop-64.png" />
 				</button>
-				-->
-				<img src="public/image/player/play-64.png" style="cursor:pointer;" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
-				<img src="public/image/player/pause-64.png" style="cursor:pointer;" ng-click="pause()" ng-show="pausable">
-				<img src="public/image/player/stop-64.png" style="cursor:pointer;" ng-click="stop()" ng-disabled="!stoppable"> 
+				
 				<input type="range" style="display:none;" id ="masterVolume" min="0" max="100" value="100" ng-model="volume"> 
-			</div>
-
-			<!-- Bouton rotatif du volume -->
-			<section id="main" style="width: 250px; margin-left: 500px;">
-				<div id="bars">
-					<div id="control"></div>
-				</div>
-			</section>
+        <!-- Bouton rotatif du volume -->
+        <section id="rotate_button">
+            <div id="bars">
+              <div id="control"></div>
+            </div>
+        </section>
+      </div>
 		</div>
+  </div>
 
+  <!-- Equalizer & Description -->
 	<div class="row">
 		<div class="small-3 columns">
-			<!-- Control bar 
-			<canvas id='clickbar_canvas' width='200' height='100'></canvas>
-			-->
+      <!-- Esualizers -->
 			<div class="panel" style="width:235px;float:left;">
 				<div ng-repeat="equa in audioGraph.equalizer">
 					<label>{{equa.frequency.value}}</label>
@@ -190,11 +212,16 @@
 				<input type="range" min="1" value="1" max="10" ng-model="speed"> 
 			</div>
 		</div>
+    <!-- Description -->
 		<div class="small-9 columns">
-			<div class="panel" style="width: 721px;height: 315px;overflow-y: scroll;" id="description"><h3><img style="float:left;"src="{{selectedTrack.image}}"> <br> {{selectedTrack.title}}</h3><div style="clear:left;">{{selectedTrack.description}}</div><br><a href="{{selectedTrack.url}}">{{selectedTrack.url}}</a></div>
+			<div class="panel" style="width: 721px;height: 315px;overflow-y: scroll;" id="description">
+        <h3><img style="float:left;" src="{{selectedTrack.image}}"> <br> {{selectedTrack.title}}</h3>
+        <div style="clear:left;">{{selectedTrack.description}}</div>
+        <br><a href="{{selectedTrack.url}}">{{selectedTrack.url}}</a></div>
 		</div>
 	</div>
 
+  <!-- TRACKS -->
 	<div class="row">
 		<div class="small-3 columns">
 			<div id="tracks">
@@ -207,17 +234,44 @@
 						<i class="clickable fi-volume-strike" ng-click="subtrack.unmute()" ng-show="subtrack.mutted"></i>
 						<input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()">
 					</div>
-
-					<!-- <div class="progress success">
-							<span id="{{subtrack.name}}" class="meter" style="width: {{subtrack.progress}}%"></span>
-						</div> -->
 				</div>
 			</div>
 		</div>
 		<div class="small-9 columns">
 			<canvas id="subtracks_canvas" width="720" height="0"></canvas>
+      <canvas id="front_subtracks_canvas" width="720" height="0"></canvas>
 		</div>
 	</div>
+
+  <div class="row">
+    <div class="small-12 columns">
+      <div class="panel" drag-and-drop>
+        <h4>Déposer de la music</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPLOADED TRACKS -->
+  <div class="row">
+    <div class="small-3 columns">
+      <div id="tracks">
+        <div class="panel" ng-repeat="subtrack in uploadedTrack.subtracks">
+          <label for="">{{subtrack.name}}</label>
+          <img ng-hide="subtrack.loaded" src="/public/image/ajax-loader.gif"/>
+          <div ng-show="subtrack.loaded">
+            <i class="clickable fi-volume" ng-click="subtrack.mute()" ng-hide="subtrack.mutted"></i>
+            <i class="clickable fi-volume-strike" ng-click="subtrack.unmute()" ng-show="subtrack.mutted"></i>
+            <input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="small-9 columns">
+      <canvas id="uploaded_subtracks_canvas" width="720" height="0"></canvas>
+      <canvas id="front_uploaded_subtracks_canvas" width="720" height="0"></canvas>
+    </div>
+  </div>
+  <!-- RECORDING -->
 	<div class="row">
 		<div class="small-3 columns">
 			<div class="panel">
@@ -227,36 +281,10 @@
 						<img src="public/image/player/record.png" style="display: block;" onclick="toggleRecording(this);">
 						<img src="public/image/player/dl.png" onclick="saveAudio();" style="display:none;" id="btn_dl">
 					</div>
+				</div>
 			</div>
-		</div>
 		<div class="small-9 columns">
 			<canvas id="wavedisplay" width="720" height="160" style="background-color:black;"></canvas>
-		</div>
-	</div>
-	<div class="row">
-		<div class="small-3 columns">
-			<div class="panel" 
-				ondragenter="dragEnterHandler(event)" 
-				ondrop="dropHandler(event)" 
-				ondragover="dragOverHandler(event)" 
-				ondragleave="dragLeaveHandler(event)">
-
-				<label for=""> <h4>Envoi de music</h4></label>
-				<center><img ng-hide="subtrack.loaded" src="/public/image/player/upload.png"/></center>
-				<div ng-show="subtrack.loaded">
-					<i class="clickable fi-volume" ng-click="subtrack.mute()" ng-hide="subtrack.mutted"></i>
-					<i class="clickable fi-volume-strike" ng-click="subtrack.unmute()" ng-show="subtrack.mutted"></i>
-					<input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()" >
-				</div>
-
-
-				<!-- <div class="progress success">
-						<span id="{{subtrack.name}}" class="meter" style="width: {{subtrack.progress}}%"></span>
-					</div> -->
-			</div>
-		</div>
-		<div class="small-9 columns">
-			<canvas id="wavesend" width="720" height="140" style="background-color:black;"></canvas>
 		</div>
 	</div>
 

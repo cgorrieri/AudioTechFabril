@@ -17,6 +17,6 @@ var PORT = 8082;
 require("./routes/tracks")(app, __dirname);
 
 // launch the http server on given port
-server.listen(PORT);
-
-console.log("Serveur lancé sur le port " + PORT);
+server.listen(PORT, function() { 
+  console.log("Serveur lancé sur le port " + PORT);
+});

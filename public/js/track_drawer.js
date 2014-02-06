@@ -12,8 +12,6 @@ function TrackDrawer(canvas, track_height, outline_height) {
 // track: an AudioBuffer object
 // position: position of the track in the list (start to 0)
 TrackDrawer.prototype.draw_track = function(track, position) {
-	
-	// init context to draw on the canvas
 
 	var baseHeight = position*(this.track_height + this.outline_height)+this.track_height/2;
 

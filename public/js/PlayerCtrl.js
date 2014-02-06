@@ -1,13 +1,15 @@
+var audio_app = angular.module('AudioApp', []);
 
-function PlayerCtrl ($scope, $http) {
-	$scope.audioGraph = new AudioGraph(1);
-	$scope.tracks = [];
-	$scope.subtracks = [];
+audio_app.controller("PlayerCtrl", function ($scope, $http) {
+  $scope.audioGraph = new AudioGraph(1);
+  $scope.uploadedTrack = new Track("uploaded")
+  $scope.tracks = [];
+  $scope.subtracks = [];
 
-	$scope.pausable = false;
-	$scope.playable = false;
-	$scope.stoppable = false;
-	$scope.stopped = true;
+  $scope.pausable = false;
+  $scope.playable = false;
+  $scope.stoppable = false;
+  $scope.stopped = true;
 
   // Vitesse de lecture
   //
@@ -15,8 +17,35 @@ function PlayerCtrl ($scope, $http) {
 
 	$scope.volume = 100;
 
+  /* -- CANVAS FOR TRACKS -- */
   $scope.canvas = document.querySelector("#subtracks_canvas");
   $scope.trackDrawer = new TrackDrawer($scope.canvas, 80, 20);
+
+  // Create a second canvas
+  $scope.frontCanvas = document.querySelector('#front_subtracks_canvas');
+  $scope.frontCtx = $scope.frontCanvas.getContext('2d');
+
+  $scope.frontCanvas.addEventListener('click', function(mouseEvent) {
+    $scope.stop();
+    $scope.play(mouseEvent.layerX / $scope.frontCanvas.width);
+    $scope.$apply();
+  }, false);
+  /* -------- */
+
+  /* -- CANVAS FOR UPLOADED TRACKS -- */
+  $scope.uploadedCanvas = document.querySelector("#uploaded_subtracks_canvas");
+  $scope.uploadedTrackDrawer = new TrackDrawer($scope.uploadedCanvas, 80, 20);
+
+  // Create a second canvas
+  $scope.uploadedFrontCanvas = document.querySelector('#front_uploaded_subtracks_canvas');
+  $scope.uploadedFrontCtx = $scope.uploadedFrontCanvas.getContext('2d');
+
+  $scope.uploadedFrontCanvas.addEventListener('click', function(mouseEvent) {
+    $scope.stop();
+    $scope.play(mouseEvent.layerX / $scope.frontCanvas.width);
+    $scope.$apply();
+  }, false);
+  /* -------- */
 
   $scope.canvas_frequence_left = document.querySelector("#canvas_fequencies_left");
   $scope.canvas_frequence_right = document.querySelector("#canvas_fequencies_right");
@@ -25,36 +54,23 @@ function PlayerCtrl ($scope, $http) {
   $scope.ctx_sound_right = $scope.canvas_frequence_right.getContext("2d");
   $scope.ctx_sound_right.translate($scope.canvas_frequence_right.width, 0);
 
-  // Create a second canvas
-  $scope.frontCanvas = document.createElement('canvas');
-  $scope.frontCanvas.id = 'canvasFront';
-  // Add it as a second child of the mainCanvas parent.
-  $scope.canvas.parentNode.appendChild($scope.frontCanvas);
-  // make it same size as its brother
-  $scope.frontCanvas.width = $scope.canvas.width;
-  $scope.frontCtx = $scope.frontCanvas.getContext('2d');
-
-  $scope.frontCanvas.addEventListener('click', function(mouseEvent) {
-    $scope.stop();
-    $scope.play(mouseEvent.layerX / $scope.frontCanvas.width);
-    $scope.$apply();
-  }, false);
-
   // Animatite function, periodicaly call
   //
   $scope.animate = function() {
-    // update
+    // update time line position
     var pos = $scope.audioGraph.getPercent()/100 * $scope.frontCanvas.width;
 
-    // clear
-    $scope.frontCtx.clearRect(0, 0, $scope.frontCanvas.width, $scope.frontCanvas.height);
-
-    // draw stuff
-    $scope.frontCtx.beginPath();
-    $scope.frontCtx.rect(pos-3, 0, 3, $scope.frontCanvas.height);
-    $scope.frontCtx.fillStyle = 'red';
-    $scope.frontCtx.fill();
-
+    // Draw time line on each canvas
+    [$scope.frontCtx, $scope.uploadedFrontCtx].forEach(function(ctx) {
+      // clear
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      // draw stuff
+      ctx.beginPath();
+      ctx.rect(pos-3, 0, 3, ctx.canvas.height);
+      ctx.fillStyle = 'red';
+      ctx.fill();
+    })
+    
     drawFrequencies($scope.audioGraph.analyser, $scope.canvas_frequence_left, $scope.canvas_frequence_right);
 
     // request new frame
@@ -64,29 +80,29 @@ function PlayerCtrl ($scope, $http) {
   }
   $scope.animate();
 
-	$http({method: 'GET', url: '/track'}).
-	  success(function(data, status, headers, config) {
-	    //var songList = JSON.parse(data);
+  // Get all tracks on the server
+  $http({method: 'GET', url: '/track'}).
+    success(function(data, status, headers, config) {
         data.forEach(function(songName) {
             $scope.tracks.push(new Track(songName));
         });
-        //if(callback) callback(thus.tracks);
-	  }).
-	  error(function(data, status, headers, config) {
-	    // TOTO
-	  });
+    }).
+    error(function(data, status, headers, config) {
+      // TOTO
+    });
 
-	$scope.$watch("selectedTrack",function() {
-		if(!$scope.selectedTrack) return;
+  // Event when a track is selected
+  $scope.$watch("selectedTrack",function() {
+    if(!$scope.selectedTrack) return;
 
     console.log("ici");
     $scope.selectedTrack.setDbPedia();
 
     $scope.stop();
     $scope.selectedTrack.load(function(subtracks) {
-    	$scope.$apply();
+      $scope.$apply();
       // Counter to watch the evolution of the load
-  		var subtracksLoadedCount = 0;
+      var subtracksLoadedCount = 0;
 
       // TODO: prendre taille dynamiquement
       $scope.canvas.height = 80*subtracks.length+20*(subtracks.length-1);
@@ -96,42 +112,42 @@ function PlayerCtrl ($scope, $http) {
         $scope.selectedTrack.subtracks[i].load($scope.audioGraph, function(subtrack){
           $scope.$apply();
           if(++subtracksLoadedCount == subtracks.length) {
-            $scope.audioGraph.setSubtracks($scope.selectedTrack.subtracks);
+            $scope.setSubtracks();
             $scope.enablePlay();
           }
           $scope.trackDrawer.draw_track(subtrack.buffer, i);
         });
       });
-		});
-	});
+    });
+  });
 
-	$scope.$watch("volume",function() {
-		$scope.audioGraph.changeMasterVolume($scope.volume/100.0);
-	})
+  $scope.$watch("volume",function() {
+    $scope.audioGraph.changeMasterVolume($scope.volume/100.0);
+  })
 
-	$scope.enablePlay = function() {
-		$scope.$apply(function() {
-			$scope.playable = true;
-		});
-	}
+  $scope.enablePlay = function() {
+    $scope.$apply(function() {
+      $scope.playable = true;
+    });
+  }
 
-	$scope.play = function(start) {
+  $scope.play = function(start) {
     if($scope.stopped) $scope.audioGraph.play(start);
     else $scope.audioGraph.resume();
-		$scope.pausable = true;
-		$scope.stoppable = true;
-	  $scope.stopped = false;
-	}
+    $scope.pausable = true;
+    $scope.stoppable = true;
+    $scope.stopped = false;
+  }
 
-	$scope.pause = function() {
+  $scope.pause = function() {
     $scope.audioGraph.pause();
     $scope.pausable = false;
-	}
+  }
 
-	$scope.stop = function() {
+  $scope.stop = function() {
     $scope.audioGraph.stop();
     $scope.pausable = false;
-		$scope.stoppable = false;
+    $scope.stoppable = false;
     $scope.stopped = true;
 	}
   
@@ -139,5 +155,67 @@ function PlayerCtrl ($scope, $http) {
     $scope.audioGraph.speed = $scope.speed;
     $scope.audioGraph.setSpeed();
   }, true);
-  
-}
+
+  $scope.setSubtracks = function() {
+    var subtracks = $scope.uploadedTrack.subtracks;
+    if($scope.selectedTrack)
+      subtracks = subtracks.concat($scope.selectedTrack.subtracks);
+    $scope.audioGraph.setSubtracks(subtracks);
+  }
+
+  $scope.addFile = function(fileName, arrayBuffer) {
+    $scope.stop();
+    var subtrack = new SubTrack(fileName, "");
+
+    $scope.$apply(function() {
+      $scope.uploadedTrack.subtracks.push(subtrack);
+    });
+
+    $scope.uploadedCanvas.height = 80*$scope.uploadedTrack.subtracks.length+20*($scope.uploadedTrack.subtracks.length-1);
+    $scope.uploadedFrontCanvas.height = $scope.uploadedCanvas.height;
+    
+    subtrack.loadFromBuffer(arrayBuffer, $scope.audioGraph, function(subtrack) {
+      /* DRAW TRACKS */
+      $scope.uploadedTrack.subtracks.forEach(function(subtrack, i) {
+        $scope.uploadedTrackDrawer.draw_track(subtrack.buffer, i);
+      });
+      $scope.setSubtracks();
+      $scope.enablePlay();
+    });
+  }
+});
+
+audio_app.directive('dragAndDrop', function() {
+  return {
+    restrict: 'A',
+    link: function($scope, elem, attr) {
+      elem.off('.upload') // remove all events in namespace upload
+      .on({
+          'dragenter.upload': function(e) {
+              e.stopPropagation();
+              e.preventDefault();
+          },
+          'dragover.upload': function(e) {
+              e.stopPropagation();
+              e.preventDefault();
+          },
+          'drop.upload': function(e) {
+              e.stopPropagation();
+              e.preventDefault();
+
+              var files = e.originalEvent.dataTransfer.files;
+        
+              for (var i = 0, f; f = files[i]; i++) {
+                var reader = new FileReader();
+                reader.onload = (function(theFile) {
+                  return function(e) {
+                    $scope.addFile(theFile.name, e.target.result);
+                  };
+                })(f);
+                reader.readAsArrayBuffer(f);
+              }
+          }
+        });
+    }
+  };
+});
