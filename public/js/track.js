@@ -3,6 +3,8 @@ function Track(name) {
     this.name = name;
     this.title = "";
     this.description = "";
+    this.image = "";
+    this.url = "";
     this.subtracks = [];
 }
 
@@ -30,4 +32,23 @@ Track.prototype.load = function(callback) {
   } else {
       if(callback) callback(this.subtracks);
   }
+}
+
+Track.prototype.setDbPedia = function () {
+  var thus = this;
+    getTitle(this.name, function(value) {
+      thus.title = value;
+    });
+
+    getAbstract(this.name, function(value) {
+      thus.description = value;
+    });
+
+    getPictureURL(this.name, function(value) {
+      thus.image = value;
+    });
+
+    getWikipediaPage(this.name, function(value) {
+      thus.url = value;
+    });
 }

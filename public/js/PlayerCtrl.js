@@ -9,6 +9,10 @@ function PlayerCtrl ($scope, $http) {
 	$scope.stoppable = false;
 	$scope.stopped = true;
 
+  // Vitesse de lecture
+  //
+  $scope.speed = 1;
+
 	$scope.volume = 100;
 
   $scope.canvas = document.querySelector("#subtracks_canvas");
@@ -75,13 +79,8 @@ function PlayerCtrl ($scope, $http) {
 	$scope.$watch("selectedTrack",function() {
 		if(!$scope.selectedTrack) return;
 
-    getTitle($scope.selectedTrack.name, function(value) {
-      $scope.selectedTrack.title = value;
-    });
-
-    getAbstract($scope.selectedTrack.name, function(value) {
-      $scope.selectedTrack.description = value;
-    });
+    console.log("ici");
+    $scope.selectedTrack.setDbPedia();
 
     $scope.stop();
     $scope.selectedTrack.load(function(subtracks) {
@@ -135,4 +134,10 @@ function PlayerCtrl ($scope, $http) {
 		$scope.stoppable = false;
     $scope.stopped = true;
 	}
+  
+  $scope.$watch("speed", function() {
+    $scope.audioGraph.speed = $scope.speed;
+    $scope.audioGraph.setSpeed();
+  }, true);
+  
 }

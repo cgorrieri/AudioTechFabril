@@ -22,251 +22,260 @@
 	<script type="text/javascript" src="https://raw.github.com/EightMedia/hammer.js/v1.0.5/dist/hammer.js"></script>
 	<script type="text/javascript" src="public/kiev/dist/kievII.min.js"></script>
 	<script type="text/javascript" src="public/kiev/tests/ClickBar/clickbartest.js"></script>
--->
+		-->
 
-<!-- Audio record -->
-<script src="public/js/mainAudioRecord.js"></script>
-<script src="public/js/recorder.js"></script>
-<script src="public/js/audiodisplay.js"></script>
-<script src="public/js/libs/jquery-ui.js"></script>
+		<!-- Audio record -->
+		<script src="public/js/mainAudioRecord.js"></script>
+		<script src="public/js/recorder.js"></script>
+		<script src="public/js/audiodisplay.js"></script>
+		<script src="public/js/libs/jquery-ui.js"></script>
 
+		<!--
+			<script src="js/libs/jquery-1.9.0/jquery.min.js"></script>
+		-->
+
+		<script src="public/js/subtrack.js"></script>
+		<script src="public/js/track.js"></script>
+		<script src="public/js/track_drawer.js"></script>
+		<script src="public/js/audio_graph.js"></script>
+		<script src="public/js/frequencies_drawer.js"></script>
+		<script src="public/js/drag_drop.js"></script>
+
+		<script src="public/js/dbpedia.js"></script>
+
+		<script>
+			window.requestAnimFrame = (function(callback) {
+				return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
+				function(callback) {
+					window.setTimeout(callback, 1000 / 60);
+				};
+			})();
+		</script>
+
+		<style>
+			.columns {
+				padding-left:0;
+			}
+			#subtracks_canvas {
+				background:rgb(242, 242, 242);
+			}
+			#canvasFront {
+				position:absolute;
+				top:0;
+				left:0;
+			}
+			.sample {
+				border: solid white 1px;
+				background:grey;
+			}
+			.clickable:hover {
+				cursor:pointer;
+			}
+			input[type="range"].subtrack_sound_range {
+				width:150px;
+				height:11px;
+			}
+			#canvas_fequencies_left, #canvas_fequencies_right {
+				position: absolute;
+			}
+			#canvas_fequencies_left {
+				top:0px;
+				left:0px;
+				position
+			}
+			#canvas_fequencies_right {
+				float:right;
+				top:0px;
+				right:0px;
+			}
+			.draggedOver {
+				background-color: red;
+			}
+			.equalizer {
+				width: 150px;
+				height: 10px;
+				-moz-transfrom: rotate(270deg);
+			}
+			#menu_float {
+			    display: none;
+			    position: fixed;
+			    top: 0;
+			    width: 100%;
+			    height: 60px;
+			    z-index: 1;
+				margin: auto;
+				background-color: grey;
+			}
+			#menu_float #boutons {
+				margin-left: 30%;
+			}
+		</style>
+		<script>
+			$(function(){
+				$(document).scroll(function () {
+					var y = $(this).scrollTop();
+					if (y > 170) {
+							$('#menu_float').fadeIn();
+					} else {
+							$('#menu_float').fadeOut();
+					}
+				});
+			});
+		</script>
+	</head>
+	<body ng-app ng-controller="PlayerCtrl">
+		<canvas id="canvas_fequencies_left" width="250" height="750" style="position:fixed;"></canvas>
+		<canvas id="canvas_fequencies_right" width="250" height="750" style="position:fixed;"></canvas>
+		
+		<div id="menu_float">
+			<div id="boutons">
+				{{selectedTrack.title}}
+				<img src="public/image/player/play-64.png" style="cursor:pointer;" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
+				<img src="public/image/player/pause-64.png" style="cursor:pointer;" ng-click="pause()" ng-show="pausable">
+				<img src="public/image/player/stop-64.png" style="cursor:pointer;" ng-click="stop()" ng-disabled="!stoppable">
+				<input type="range" id ="masterVolume" min="0" max="100" value="100" ng-model="volume"> 
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="small-3 columns">
+				<div class="panel" style="margin-top:23px;">
+					<div id="songs">
+						<h4>Charger un album</h4>
+						<select ng-options='track as track.name for track in tracks'
+						ng-model="selectedTrack" ></select>
+					</div>
+				</div>
+			</div>
+			<div class="small-9 columns" id="audio_replace">
+				<h1 id="title">AudioTech</h1>
 				<!--
-						<script src="js/libs/jquery-1.9.0/jquery.min.js"></script>
-					-->
-
-					<script src="public/js/subtrack.js"></script>
-					<script src="public/js/track.js"></script>
-					<script src="public/js/track_drawer.js"></script>
-					<script src="public/js/audio_graph.js"></script>
-					<script src="public/js/frequencies_drawer.js"></script>
-					<script src="public/js/drag_drop.js"></script>
-
-					<script src="public/js/dbpedia.js"></script>
-
-					<script>
-						window.requestAnimFrame = (function(callback) {
-							return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
-							function(callback) {
-								window.setTimeout(callback, 1000 / 60);
-							};
-						})();
-					</script>
-
-					<style>
-						.columns {
-							padding-left:0;
-						}
-						#subtracks_canvas {
-							background:rgb(242, 242, 242);
-						}
-						#canvasFront {
-							position:absolute;
-							top:0;
-							left:0;
-						}
-						.sample {
-							border: solid white 1px;
-							background:grey;
-						}
-						.clickable:hover {
-							cursor:pointer;
-						}
-						input[type="range"].subtrack_sound_range {
-							width:150px;
-							height:11px;
-						}
-						#canvas_fequencies_left, #canvas_fequencies_right {
-							position: absolute;
-						}
-						#canvas_fequencies_left {
-							top:0px;
-							left:0px;
-							position
-						}
-						#canvas_fequencies_right {
-							float:right;
-							top:0px;
-							right:0px;
-						}
-						.draggedOver {
-							background-color: red;
-						}
-						.equalizer {
-							width: 150px;
-							height: 10px;
-							-moz-transfrom: rotate(270deg);
-						}
-						#menu_float {
-						    display: none;
-						    position: fixed;
-						    top: 0;
-						    left: 33%;
-						    width: 100%;
-						    height: 60px;
-						    z-index: 1;
-								margin: auto;
-						}
-					</style>
-					<script>
-						$(function(){
-							$('#menu_float').html($("#audio_replace").html());
-							$('#menu_float #masterVolume').show();
-							$('#menu_float #title').hide();
-							$(document).scroll(function () {
-									var y = $(this).scrollTop();
-									if (y > 170) {
-											$('#menu_float').fadeIn();
-									} else {
-											$('#menu_float').fadeOut();
-									}
-							});
-						})
-					</script>
-				</head>
-				<body ng-app ng-controller="PlayerCtrl">
-					<canvas id="canvas_fequencies_left" width="250" height="750" style="position:fixed;"></canvas>
-					<canvas id="canvas_fequencies_right" width="250" height="750" style="position:fixed;"></canvas>
-					
-					<div id="menu_float"></div>
-
-					<div class="row">
-						<div class="small-3 columns">
-							<div class="panel" style="margin-top:23px;">
-								<div id="songs">
-									<h4>Charger un album</h4>
-									<select ng-options='track as track.name for track in tracks'
-									ng-model="selectedTrack" ></select>
-								</div>
-							</div>
-						</div>
-						<div class="small-9 columns" id="audio_replace">
-							<h1 id="title">AudioTech</h1>
-							<!--
-							<button class="button small radius" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
-								<i class="fi-play"></i> Play
-							</button>      
-							<button class="button small radius" ng-click="pause()" ng-show="pausable">
-								<i class="fi-pause"></i> Pause
-							</button>
-							<button class="button small radius" id="bstop" ng-click="stop()" ng-disabled="!stoppable">
-								<i class="fi-stop"></i> Stop
-							</button>
-							-->
-							<img src="public/image/player/play-64.png" style="cursor:pointer;" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
-							<img src="public/image/player/pause-64.png" style="cursor:pointer;" ng-click="pause()" ng-show="pausable">
-							<img src="public/image/player/stop-64.png" style="cursor:pointer;" ng-click="stop()" ng-disabled="!stoppable">
-							
-							<input style="display:none;" type="range" id ="masterVolume" min="0" max="100" value="100" ng-model="volume"> 
-						</div>
-
-						<!-- Bouton rotatif du volume -->
-						<section id="main" style="width: 250px; margin-left: 500px;">
-							<div id="bars">
-								<div id="control"></div>
-							</div>
-						</section>
-					</div>
-
-				<div class="row">
-					<div class="small-3 columns">
-						<!-- Control bar 
-						<canvas id='clickbar_canvas' width='200' height='100'></canvas>
-						-->
-						<div class="panel" style="width:235px;float:left;">
-							<div ng-repeat="equa in audioGraph.equalizer">
-								<label>{{equa.frequency.value}}</label>
-								<input style="diplay:block;" class="equalizer" type="range" min="0" max="10" val="0"  ng-model="equa.gain.value">
-							</div>
-							<label>delay</label>
-							<input style="diplay:block;" class="equalizer" type="range" min="0" max="10" ng-model="audioGraph.delay.delayTime.value">
-						</div>
-					</div>
-					<div class="small-9 columns">
-						<div class="panel" style="width: 721px;height: 271px;overflow-y: scroll;" id="description"><h3>{{selectedTrack.title}}</h3><br>{{selectedTrack.description}}</div>
-					</div>
-				</div>
-
-				<div class="row">
-					<div class="small-3 columns">
-						<div id="tracks">
-							<div class="panel" ng-repeat="subtrack in selectedTrack.subtracks">
-								<!--<img src="/public/image/{{subtrack.name}}.png"/>-->
-								<label for="">{{subtrack.name}}</label>
-								<img ng-hide="subtrack.loaded" src="/public/image/ajax-loader.gif"/>
-								<div ng-show="subtrack.loaded">
-									<i class="clickable fi-volume" ng-click="subtrack.mute()" ng-hide="subtrack.mutted"></i>
-									<i class="clickable fi-volume-strike" ng-click="subtrack.unmute()" ng-show="subtrack.mutted"></i>
-									<input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()">
-								</div>
-
-								<!-- <div class="progress success">
-										<span id="{{subtrack.name}}" class="meter" style="width: {{subtrack.progress}}%"></span>
-									</div> -->
-							</div>
-						</div>
-					</div>
-					<div class="small-9 columns">
-						<canvas id="subtracks_canvas" width="720" height="0"></canvas>
-					</div>
-				</div>
-				<div class="row">
-					<div class="small-3 columns">
-						<div class="panel">
-								<label for=""> <h4>Enregistrement</h4></label>
-								<canvas id="analyser" width="125" height="80" style="background-color:black;"></canvas>
-								<div style="float:right; cursor:pointer;">
-									<img src="public/image/player/record.png" style="display: block;" onclick="toggleRecording(this);">
-									<img src="public/image/player/dl.png" onclick="saveAudio();" style="display:none;" id="btn_dl">
-								</div>
-						</div>
-					</div>
-					<div class="small-9 columns">
-						<canvas id="wavedisplay" width="720" height="160" style="background-color:black;"></canvas>
-					</div>
-				</div>
-				<div class="row">
-					<div class="small-3 columns">
-						<div class="panel" 
-							ondragenter="dragEnterHandler(event)" 
-							ondrop="dropHandler(event)" 
-							ondragover="dragOverHandler(event)" 
-							ondragleave="dragLeaveHandler(event)">
-
-							<label for=""> <h4>Envoi de music</h4></label>
-							<center><img ng-hide="subtrack.loaded" src="/public/image/player/upload.png"/></center>
-							<div ng-show="subtrack.loaded">
-								<i class="clickable fi-volume" ng-click="subtrack.mute()" ng-hide="subtrack.mutted"></i>
-								<i class="clickable fi-volume-strike" ng-click="subtrack.unmute()" ng-show="subtrack.mutted"></i>
-								<input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()" >
-							</div>
-
-
-							<!-- <div class="progress success">
-									<span id="{{subtrack.name}}" class="meter" style="width: {{subtrack.progress}}%"></span>
-								</div> -->
-						</div>
-					</div>
-					<div class="small-9 columns">
-						<canvas id="wavesend" width="720" height="140" style="background-color:black;"></canvas>
-					</div>
-				</div>
-
-				<script src="public/js/libs/angular.min.js"></script>
-				<script src="public/js/PlayerCtrl.js"></script>
-
-				<!-- Foundation boutstrap -->
-				<script src="public/foundation/js/foundation.min.js"></script>
-				<script>$(document).foundation();</script>
-
-				<!-- Knob -->
-				<script src="public/knob/assets/knobKnob/transform.js"></script>
-				<script src="public/knob/assets/knobKnob/knobKnob.jquery.js"></script>
-				<script src="public/knob/assets/js/script.js"></script>
-
-					<!-- kiev
-					<script type='text/javascript'>
-						ClickBarTest.init(document.getElementById('clickbar_canvas'));
-					</script>
+				<button class="button small radius" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
+					<i class="fi-play"></i> Play
+				</button>      
+				<button class="button small radius" ng-click="pause()" ng-show="pausable">
+					<i class="fi-pause"></i> Pause
+				</button>
+				<button class="button small radius" id="bstop" ng-click="stop()" ng-disabled="!stoppable">
+					<i class="fi-stop"></i> Stop
+				</button>
 				-->
-			</body>
-			</html>
+				<img src="public/image/player/play-64.png" style="cursor:pointer;" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
+				<img src="public/image/player/pause-64.png" style="cursor:pointer;" ng-click="pause()" ng-show="pausable">
+				<img src="public/image/player/stop-64.png" style="cursor:pointer;" ng-click="stop()" ng-disabled="!stoppable"> 
+				<input type="range" style="display:none;" id ="masterVolume" min="0" max="100" value="100" ng-model="volume"> 
+			</div>
+
+			<!-- Bouton rotatif du volume -->
+			<section id="main" style="width: 250px; margin-left: 500px;">
+				<div id="bars">
+					<div id="control"></div>
+				</div>
+			</section>
+		</div>
+
+	<div class="row">
+		<div class="small-3 columns">
+			<!-- Control bar 
+			<canvas id='clickbar_canvas' width='200' height='100'></canvas>
+			-->
+			<div class="panel" style="width:235px;float:left;">
+				<div ng-repeat="equa in audioGraph.equalizer">
+					<label>{{equa.frequency.value}}</label>
+					<input style="diplay:block;" class="equalizer" type="range" min="0" max="10" val="0"  ng-model="equa.gain.value">
+				</div>
+				<label>delay</label>
+				<input style="diplay:block;" class="equalizer" type="range" min="0" max="10" ng-model="audioGraph.delay.delayTime.value">
+				<label>Speed</label>
+				<input type="range" min="1" value="1" max="10" ng-model="speed"> 
+			</div>
+		</div>
+		<div class="small-9 columns">
+			<div class="panel" style="width: 721px;height: 315px;overflow-y: scroll;" id="description"><h3><img style="float:left;"src="{{selectedTrack.image}}"> <br> {{selectedTrack.title}}</h3><div style="clear:left;">{{selectedTrack.description}}</div><br><a href="{{selectedTrack.url}}">{{selectedTrack.url}}</a></div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="small-3 columns">
+			<div id="tracks">
+				<div class="panel" ng-repeat="subtrack in selectedTrack.subtracks">
+					<!--<img src="/public/image/{{subtrack.name}}.png"/>-->
+					<label for="">{{subtrack.name}}</label>
+					<img ng-hide="subtrack.loaded" src="/public/image/ajax-loader.gif"/>
+					<div ng-show="subtrack.loaded">
+						<i class="clickable fi-volume" ng-click="subtrack.mute()" ng-hide="subtrack.mutted"></i>
+						<i class="clickable fi-volume-strike" ng-click="subtrack.unmute()" ng-show="subtrack.mutted"></i>
+						<input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()">
+					</div>
+
+					<!-- <div class="progress success">
+							<span id="{{subtrack.name}}" class="meter" style="width: {{subtrack.progress}}%"></span>
+						</div> -->
+				</div>
+			</div>
+		</div>
+		<div class="small-9 columns">
+			<canvas id="subtracks_canvas" width="720" height="0"></canvas>
+		</div>
+	</div>
+	<div class="row">
+		<div class="small-3 columns">
+			<div class="panel">
+					<label for=""> <h4>Enregistrement</h4></label>
+					<canvas id="analyser" width="125" height="80" style="background-color:black;"></canvas>
+					<div style="float:right; cursor:pointer;">
+						<img src="public/image/player/record.png" style="display: block;" onclick="toggleRecording(this);">
+						<img src="public/image/player/dl.png" onclick="saveAudio();" style="display:none;" id="btn_dl">
+					</div>
+			</div>
+		</div>
+		<div class="small-9 columns">
+			<canvas id="wavedisplay" width="720" height="160" style="background-color:black;"></canvas>
+		</div>
+	</div>
+	<div class="row">
+		<div class="small-3 columns">
+			<div class="panel" 
+				ondragenter="dragEnterHandler(event)" 
+				ondrop="dropHandler(event)" 
+				ondragover="dragOverHandler(event)" 
+				ondragleave="dragLeaveHandler(event)">
+
+				<label for=""> <h4>Envoi de music</h4></label>
+				<center><img ng-hide="subtrack.loaded" src="/public/image/player/upload.png"/></center>
+				<div ng-show="subtrack.loaded">
+					<i class="clickable fi-volume" ng-click="subtrack.mute()" ng-hide="subtrack.mutted"></i>
+					<i class="clickable fi-volume-strike" ng-click="subtrack.unmute()" ng-show="subtrack.mutted"></i>
+					<input class="subtrack_sound_range" type="range" min="0" max="100" ng-model="subtrack.volume" ng-change="subtrack.setVolume()" >
+				</div>
+
+
+				<!-- <div class="progress success">
+						<span id="{{subtrack.name}}" class="meter" style="width: {{subtrack.progress}}%"></span>
+					</div> -->
+			</div>
+		</div>
+		<div class="small-9 columns">
+			<canvas id="wavesend" width="720" height="140" style="background-color:black;"></canvas>
+		</div>
+	</div>
+
+	<script src="public/js/libs/angular.min.js"></script>
+	<script src="public/js/PlayerCtrl.js"></script>
+
+	<!-- Foundation boutstrap -->
+	<script src="public/foundation/js/foundation.min.js"></script>
+	<script>$(document).foundation();</script>
+
+	<!-- Knob -->
+	<script src="public/knob/assets/knobKnob/transform.js"></script>
+	<script src="public/knob/assets/knobKnob/knobKnob.jquery.js"></script>
+	<script src="public/knob/assets/js/script.js"></script>
+
+		<!-- kiev
+		<script type='text/javascript'>
+			ClickBarTest.init(document.getElementById('clickbar_canvas'));
+		</script>
+	-->
+</body>
+</html>

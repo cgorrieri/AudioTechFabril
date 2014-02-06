@@ -16,6 +16,8 @@ function AudioGraph(volume) {
     this.graphNodes = [];
     this.trackVolumeNodes = [];
 
+    this.speed = 1;
+
     // Create a single gain node for master volume
     this.masterVolumeNode = this.context.createGain();
     this.changeMasterVolume(volume);
@@ -127,7 +129,7 @@ AudioGraph.prototype.buildGraph = function() {
 */
 AudioGraph.prototype.setSubtracks = function(subtracks) {
   // Reset previous track
-	this.subtracks.forEach(function (subtrack) {
+  this.subtracks.forEach(function (subtrack) {
     subtrack.volumeNode = undefined;
     subtrack.volume = 100;
   });
@@ -146,12 +148,13 @@ AudioGraph.prototype.setSubtracks = function(subtracks) {
 */
 AudioGraph.prototype.playFrom = function(startTime) {
 	this.buildGraph();
-
+    var thus = this;
 	this.graphNodes.forEach(function(node) {
 	// First parameter is the delay before playing the sample
 	// second one is the offset in the song, in seconds, can be 2.3456
 	// very high precision !
       node.start(0, startTime);
+      thus.setSpeed();
   })
 
   this.state = PLAYING;    
@@ -164,8 +167,8 @@ AudioGraph.prototype.play = function(percent) {
 }
 
 AudioGraph.prototype.resume = function() {
-	this.lastTime = this.context.currentTime - this.elapsedTimeSinceStart;
-  this.playFrom(this.elapsedTimeSinceStart);
+    this.lastTime = this.context.currentTime - this.elapsedTimeSinceStart;
+    this.playFrom(this.elapsedTimeSinceStart);
 }
 
 AudioGraph.prototype.stop = function() {
@@ -200,4 +203,11 @@ AudioGraph.prototype.getPercent = function() {
         return timeSinseStart/this.duration*100;
     }
     return 0;
+}
+
+AudioGraph.prototype.setSpeed = function() {
+    var thus= this;
+    this.graphNodes.forEach(function(node,i) {
+      node.playbackRate.value = thus.speed;
+    });
 }
