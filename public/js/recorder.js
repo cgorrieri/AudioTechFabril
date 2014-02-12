@@ -98,6 +98,7 @@ DEALINGS IN THE SOFTWARE.
     }
 
     worker.onmessage = function(e){
+      console.log(e.data.command);
       var blob = e.data;
       currCallback(blob);
     }

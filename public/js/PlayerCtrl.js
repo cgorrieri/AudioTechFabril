@@ -2,7 +2,8 @@ var audio_app = angular.module('AudioApp', []);
 
 audio_app.controller("PlayerCtrl", function ($scope, $http) {
   $scope.audioGraph = new AudioGraph(1);
-  $scope.uploadedTrack = new Track("uploaded")
+  $scope.uploadedTrack = new Track("uploaded");
+  $scope.recordedTrack = new Track("recorded");
   $scope.tracks = [];
   $scope.subtracks = [];
 
@@ -10,6 +11,7 @@ audio_app.controller("PlayerCtrl", function ($scope, $http) {
   $scope.playable = false;
   $scope.stoppable = false;
   $scope.stopped = true;
+  $scope.recordable == false;
 
   // Vitesse de lecture
   //
@@ -28,7 +30,6 @@ audio_app.controller("PlayerCtrl", function ($scope, $http) {
   $scope.frontCanvas.addEventListener('click', function(mouseEvent) {
     $scope.stop();
     $scope.play(mouseEvent.layerX / $scope.frontCanvas.width);
-    $scope.$apply();
   }, false);
   /* -------- */
 
@@ -41,9 +42,22 @@ audio_app.controller("PlayerCtrl", function ($scope, $http) {
   $scope.uploadedFrontCtx = $scope.uploadedFrontCanvas.getContext('2d');
 
   $scope.uploadedFrontCanvas.addEventListener('click', function(mouseEvent) {
+      $scope.stop();
+      $scope.play(mouseEvent.layerX / $scope.frontCanvas.width);
+  }, false);
+  /* -------- */
+
+  /* -- CANVAS FOR Recorded TRACKS -- */
+  $scope.recordedCanvas = document.querySelector("#recorded_subtracks_canvas");
+  $scope.recordedTrackDrawer = new TrackDrawer($scope.recordedCanvas, 80, 20);
+
+  // Create a second canvas
+  $scope.recordedFrontCanvas = document.querySelector('#front_recorded_subtracks_canvas');
+  $scope.recordedFrontCtx = $scope.recordedFrontCanvas.getContext('2d');
+
+  $scope.recordedFrontCanvas.addEventListener('click', function(mouseEvent) {
     $scope.stop();
-    $scope.play(mouseEvent.layerX / $scope.frontCanvas.width);
-    $scope.$apply();
+    $scope.play(mouseEvent.layerX / $scope.recordedCanvas.width);
   }, false);
   /* -------- */
 
@@ -54,14 +68,43 @@ audio_app.controller("PlayerCtrl", function ($scope, $http) {
   $scope.ctx_sound_right = $scope.canvas_frequence_right.getContext("2d");
   $scope.ctx_sound_right.translate($scope.canvas_frequence_right.width, 0);
 
+
+  $scope.oldPosition = 0;
+
+  var rec_canvas = document.querySelector("#canvas_recording");
+  $scope.recObjects = {
+    canvas: rec_canvas,
+    ctx2d: rec_canvas.getContext("2d"),
+    samples: [],
+    baseHeight: rec_canvas.height/2,
+    coef: rec_canvas.height/2
+  };
+
+  for(var i = 0; i < rec_canvas.width; i++) $scope.recObjects.samples.push(0.0);
+  $scope.recObjects.ctx2d.strokeStyle = '#EEEEEE';
+  $scope.recObjects.ctx2d.lineWidth = 1;
+
   // Animatite function, periodicaly call
   //
   $scope.animate = function() {
     // update time line position
     var pos = $scope.audioGraph.getPercent()/100 * $scope.frontCanvas.width;
 
+    if($scope.pausable && $scope.recordable) {
+      var posI = Math.floor(pos);
+      console.log($scope.recObjects.samples[posI]);
+      $scope.recObjects.samples[posI] = Math.max($scope.recObjects.samples[posI], $scope.audioGraph.peak);
+
+      if(Math.floor($scope.oldPosition) != posI) {
+        $scope.recObjects.ctx2d.beginPath();
+        $scope.recObjects.ctx2d.moveTo(posI-0.5, $scope.recObjects.baseHeight - $scope.recObjects.samples[posI-1]*$scope.recObjects.coef - 1);
+        $scope.recObjects.ctx2d.lineTo(posI-0.5, $scope.recObjects.baseHeight + $scope.recObjects.samples[posI-1]*$scope.recObjects.coef); 
+        $scope.recObjects.ctx2d.stroke();
+      }
+    }
+
     // Draw time line on each canvas
-    [$scope.frontCtx, $scope.uploadedFrontCtx].forEach(function(ctx) {
+    [$scope.frontCtx, $scope.uploadedFrontCtx, $scope.recordedFrontCtx].forEach(function(ctx) {
       // clear
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       // draw stuff
@@ -73,6 +116,7 @@ audio_app.controller("PlayerCtrl", function ($scope, $http) {
     
     drawFrequencies($scope.audioGraph.analyser, $scope.canvas_frequence_left, $scope.canvas_frequence_right);
 
+    $scope.oldPosition = pos;
     // request new frame
     requestAnimFrame(function() {
       $scope.animate();
@@ -122,7 +166,30 @@ audio_app.controller("PlayerCtrl", function ($scope, $http) {
 
   $scope.$watch("volume",function() {
     $scope.audioGraph.changeMasterVolume($scope.volume/100.0);
-  })
+  });
+
+  $scope.setRecord = function(activate_record) {
+    if(activate_record) {
+      if (!navigator.getUserMedia)
+          navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+      if (!navigator.cancelAnimationFrame)
+          navigator.cancelAnimationFrame = navigator.webkitCancelAnimationFrame || navigator.mozCancelAnimationFrame;
+      if (!navigator.requestAnimationFrame)
+          navigator.requestAnimationFrame = navigator.webkitRequestAnimationFrame || navigator.mozRequestAnimationFrame;
+
+      navigator.getUserMedia({audio:true},
+        function(stream) { 
+          $scope.audioGraph.setRecording(true,stream);
+          $scope.$apply(function() {
+            $scope.recordable = true;
+          })
+        }, function(e) {
+        });
+    } else {
+      $scope.audioGraph.setRecording(false);
+      $scope.recordable = false;
+    }
+  }
 
   $scope.enablePlay = function() {
     $scope.$apply(function() {
@@ -155,7 +222,7 @@ audio_app.controller("PlayerCtrl", function ($scope, $http) {
   });
 
   $scope.setSubtracks = function() {
-    var subtracks = $scope.uploadedTrack.subtracks;
+    var subtracks = $scope.uploadedTrack.subtracks.concat($scope.recordedTrack.subtracks);
     if($scope.selectedTrack)
       subtracks = subtracks.concat($scope.selectedTrack.subtracks);
     $scope.audioGraph.setSubtracks(subtracks);
@@ -180,6 +247,25 @@ audio_app.controller("PlayerCtrl", function ($scope, $http) {
       $scope.setSubtracks();
       $scope.enablePlay();
     });
+  }
+
+  var recordNumber = 1;
+  $scope.addRecord = function() {
+    $scope.stop();
+    var subtrack = new SubTrack("Record "+recordNumber, "");
+    subtrack.buffer = this.audioGraph.getRecordedBuffer();
+    subtrack.loaded = true;
+    this.recordedTrack.subtracks.push(subtrack);
+
+    $scope.recordedCanvas.height = 80*$scope.recordedTrack.subtracks.length+20*($scope.recordedTrack.subtracks.length-1);
+    $scope.recordedFrontCanvas.height = $scope.recordedCanvas.height;
+
+    $scope.recordedTrack.subtracks.forEach(function(subtrack, i) {
+      $scope.recordedTrackDrawer.draw_track(subtrack.buffer, i);
+    });
+
+    $scope.setSubtracks();
+    $scope.enablePlay();
   }
 
   $scope.format_number = function(n,d){

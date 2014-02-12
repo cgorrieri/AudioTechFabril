@@ -46,6 +46,15 @@ function AudioGraph(volume) {
 
     this.state = STOPPED;
     this.duration = 0;
+
+    this.audioStream = undefined;
+    this.activateRecording = false;
+    this.audioRecorder = undefined;
+    this.recProcessNode = undefined;
+    this.recBufferR = [];
+    this.recBufferL = [];
+    this.recLength = 0;
+    this.peak = 0;
 }
 
 // Private function to initialise the Audio Context
@@ -64,11 +73,43 @@ function initAudioContext() {
     return context;
 }
 
+AudioGraph.prototype.initRecordingGraph = function(stream) {
+  this.audioStream = stream;
+  this.streamAudioInput = this.context.createMediaStreamSource(this.audioStream);
+
+  var inputPoint = this.context.createGain();
+  this.streamAudioInput.connect(inputPoint);
+
+  var bufferLen = 4096;
+  if(!this.context.createScriptProcessor){
+     this.recProcessNode = this.context.createJavaScriptNode(bufferLen, 2, 2);
+  } else {
+     this.recProcessNode = this.context.createScriptProcessor(bufferLen, 2, 2);
+  }
+  var thus = this;
+  this.recProcessNode.onaudioprocess = function(e) {
+    thus.recordingCallback(e.inputBuffer);
+  }
+
+  inputPoint.connect(this.recProcessNode);
+  this.recProcessNode.connect(this.context.destination);
+
+  var zeroGain = this.context.createGain();
+  zeroGain.gain.value = 0.0;
+  inputPoint.connect( zeroGain );
+  zeroGain.connect( this.context.destination );
+}
+
+AudioGraph.prototype.destroyRecordingGraph = function() {
+  //this.streamAudioInput.stop();
+  //this.recProcessNode.stop();
+}
+
 // Build the graph using buffers
 AudioGraph.prototype.buildGraph = function() {
     var thus = this;
     this.subtracks.forEach(function(subtrack, i) {
-		// each sound sample is the  source of a graph
+    // each sound sample is the  source of a graph
         thus.graphNodes[i] = thus.context.createBufferSource();
         thus.graphNodes[i].buffer = subtrack.buffer;
         thus.graphNodes[i].playbackRate.value = thus.speed;
@@ -97,6 +138,24 @@ AudioGraph.prototype.buildGraph = function() {
     
     // Connect the destination
     this.delay.connect(this.context.destination);
+}
+
+AudioGraph.prototype.recordingCallback = function(buffer) {
+  if(this.activateRecording && this.state == PLAYING) {
+    this.peak = 0;
+    var buff1 = buffer.getChannelData(0), buff2 = buffer.getChannelData(1);
+    for(var i = 0; i < buffer.getChannelData(0).length; i++) {
+      this.recBufferR.push(buff1[i]);
+      this.recBufferL.push(buff2[i]);
+    
+      this.peak = Math.max(this.peak, buff1[i], buff2[i]);
+    }
+    this.recLength += buffer.getChannelData(0).length;
+  }
+};
+
+AudioGraph.prototype.getPeak = function() {
+  return this.peak;
 }
 
 /*
@@ -187,3 +246,25 @@ AudioGraph.prototype.setSpeed = function(speed) {
       node.playbackRate.value = speed;
     });
 }
+
+// TODO update time on change speed
+AudioGraph.prototype.setRecording = function(recording, stream) {
+    this.activateRecording = recording;
+    if(this.activateRecording) {
+      this.initRecordingGraph(stream);
+    } else {
+      this.destroyRecordingGraph();
+    }
+}
+
+AudioGraph.prototype.getRecordedBuffer = function() {
+    var buff = this.context.createBuffer(2, this.graphNodes[0].buffer.length, this.context.sampleRate);
+    var b1 = buff.getChannelData(0);
+    var b2 = buff.getChannelData(1);
+    for(var i = this.recLength-1; i> 0; i--) {
+      b1[i] = this.recBufferL[i];
+      b2[i] = this.recBufferR[i];
+    }
+    return buff;
+}
+

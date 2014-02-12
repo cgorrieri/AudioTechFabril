@@ -36,13 +36,17 @@ TrackDrawer.prototype.draw_track = function(track, position) {
   	}
   } 
 
-  this.ctx_2D.beginPath();
+  TrackDrawer.drawSamples(samples, baseHeight, this.track_height, this.ctx_2D)
+}
+
+TrackDrawer.drawSamples = function(samples, lineYposition, trackHeight, ctx) {
+  ctx.beginPath();
 
   // Draw samples
   for(i = 0; i < samples.length; i++) {
-    this.ctx_2D.moveTo(i+0.5, baseHeight - samples[i]*this.track_height/2 - 1);
-    this.ctx_2D.lineTo(i+0.5, baseHeight + samples[i]*this.track_height/2); 
+    ctx.moveTo(i+0.5, lineYposition - samples[i]*trackHeight/2 - 1);
+    ctx.lineTo(i+0.5, lineYposition + samples[i]*trackHeight/2); 
   }
 
-  this.ctx_2D.stroke();
+  ctx.stroke();
 }
