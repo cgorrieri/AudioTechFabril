@@ -71,6 +71,7 @@ AudioGraph.prototype.buildGraph = function() {
 		// each sound sample is the  source of a graph
         thus.graphNodes[i] = thus.context.createBufferSource();
         thus.graphNodes[i].buffer = subtrack.buffer;
+        thus.graphNodes[i].playbackRate.value = thus.speed;
         // connect each sound sample to a vomume node
         if(!subtrack.volumeNode)
           subtrack.volumeNode = thus.context.createGain();
@@ -82,7 +83,6 @@ AudioGraph.prototype.buildGraph = function() {
 
     // Connect equalizers in serie
     this.masterVolumeNode.connect(this.equalizer[0]);
-    console.log(this.equalizer.length);
     for(var i = 0; i < this.equalizer.length - 1; i++) {
       this.equalizer[i].connect(this.equalizer[i+1]);
     }
@@ -130,7 +130,6 @@ AudioGraph.prototype.playFrom = function(startTime) {
 	// second one is the offset in the song, in seconds, can be 2.3456
 	// very high precision !
       node.start(0, startTime);
-      thus.setSpeed();
   })
 
   this.state = PLAYING;    

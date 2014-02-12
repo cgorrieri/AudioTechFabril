@@ -95,7 +95,6 @@ audio_app.controller("PlayerCtrl", function ($scope, $http) {
   $scope.$watch("selectedTrack",function() {
     if(!$scope.selectedTrack) return;
 
-    console.log("ici");
     $scope.selectedTrack.setDbPedia();
 
     $scope.stop();
@@ -153,7 +152,7 @@ audio_app.controller("PlayerCtrl", function ($scope, $http) {
   
   $scope.$watch("speed", function() {
     $scope.audioGraph.setSpeed($scope.speed/25);
-  }, true);
+  });
 
   $scope.setSubtracks = function() {
     var subtracks = $scope.uploadedTrack.subtracks;
