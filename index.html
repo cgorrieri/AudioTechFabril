@@ -1,142 +1,38 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<meta charset="utf-8" />
-	<meta http-equiv="X-UA-Compatible" content="chrome=1" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>AudioTech CyGO</title>
+  <head>
+  	<meta charset="utf-8" />
+  	<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+  	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  	<title>AudioTech</title>
 
-	<!-- FOUNDATION -->
-	<link rel="stylesheet" href="public/foundation/css/normalize.css">
-	<link rel="stylesheet" href="public/foundation/css/foundation.css">
-	<link rel="stylesheet" href="public/foundation/foundation-icons/foundation-icons.css">
-	<script src="public/foundation/js/vendor/custom.modernizr.js"></script>
-	<script src="public/foundation/js/vendor/jquery.js"></script>
-	<!-- END FOUNDATION -->
+  	<!-- Foundation -->
+  	<link rel="stylesheet" href="public/foundation/css/normalize.css">
+  	<link rel="stylesheet" href="public/foundation/css/foundation.css">
+  	<link rel="stylesheet" href="public/foundation/foundation-icons/foundation-icons.css">
+  	<script src="public/foundation/js/vendor/custom.modernizr.js"></script>
+  	<script src="public/foundation/js/vendor/jquery.js"></script>
 
-	<!-- Knob -->
-	<link rel="stylesheet" href="public/knob/assets/css/styles.css" />
-	<link rel="stylesheet" href="public/knob/assets/knobKnob/knobKnob.css" />
+  	<!-- Knob - volume button -->
+  	<link rel="stylesheet" href="public/knob/assets/css/styles.css" />
+  	<link rel="stylesheet" href="public/knob/assets/knobKnob/knobKnob.css" />
+    <script src="public/knob/assets/knobKnob/transform.js"></script>
+    <script src="public/knob/assets/knobKnob/knobKnob.jquery.js"></script>
+    <script src="public/knob/assets/js/script.js"></script>
 
-	<!-- Kiev 
-	<script type="text/javascript" src="https://raw.github.com/EightMedia/hammer.js/v1.0.5/dist/hammer.js"></script>
-	<script type="text/javascript" src="public/kiev/dist/kievII.min.js"></script>
-	<script type="text/javascript" src="public/kiev/tests/ClickBar/clickbartest.js"></script>
-  <script src="public/js/mainAudioRecord.js"></script>
-    -->
-
-  <!-- Audio record -->
-  <script src="public/js/my_recorder.js"></script>
-  <script src="public/js/audiodisplay.js"></script>
-  <script src="public/js/libs/jquery-ui.js"></script>
-
-		<!--
-			<script src="js/libs/jquery-1.9.0/jquery.min.js"></script>
-		-->
-
+    <!-- My librairies -->
 		<script src="public/js/subtrack.js"></script>
 		<script src="public/js/track.js"></script>
 		<script src="public/js/track_drawer.js"></script>
 		<script src="public/js/audio_graph.js"></script>
 		<script src="public/js/frequencies_drawer.js"></script>
-		<script src="public/js/drag_drop.js"></script>
-
 		<script src="public/js/dbpedia.js"></script>
 
-		<script>
-			window.requestAnimFrame = (function(callback) {
-				return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
-				function(callback) {
-					window.setTimeout(callback, 1000 / 60);
-				};
-			})();
-		</script>
+    <!-- My style -->
+    <link rel="stylesheet" href="public/css/design.css" />
 
-		<style>
-			.columns {
-				padding-left:0;
-			}
-			.canvas {
-        background:rgb(242, 242, 242);
-      }
-      .front_canvas {
-        position:absolute;
-        top:0;
-        left:0;
-      }
-			.sample {
-				border: solid white 1px;
-				background:grey;
-			}
-			.clickable:hover {
-				cursor:pointer;
-			}
-			input[type="range"].subtrack_sound_range {
-				width:150px;
-				height:11px;
-			}
-			#canvas_fequencies_left, #canvas_fequencies_right {
-				position: absolute;
-			}
-			#canvas_fequencies_left {
-				top:0px;
-				left:0px;
-				position
-			}
-			#canvas_fequencies_right {
-				float:right;
-				top:0px;
-				right:0px;
-			}
-			.draggedOver {
-				background-color: red;
-			}
-			#menu_float {
-			    display: none;
-			    position: fixed;
-			    top: 0;
-			    width: 100%;
-			    height: 60px;
-			    z-index: 1;
-				margin: auto;
-				background-color: grey;
-			}
-			#menu_float #boutons {
-				margin-left: 30%;
-			}
-      button, button:focus, button:hover {
-        /*Reset's every elements apperance*/
-        background: none repeat scroll 0 0 transparent;
-        border: medium none;
-        border-spacing: 0;
-        margin: 0;
-        padding: 0;
-      }
-      button[disabled] {
-        background: none repeat scroll 0 0 transparent !important;
-        opacity:0.7;
-      }
-      #rotate_button {
-        width: 250px;
-        margin-left: 500px;
-        position:absolute;
-        top:0;
-        right:50px;
-      }
-      div.equalizers {
-        height:170px;
-      }
-      div.sound-control {
-        float:left;
-        margin-right:10px;
-      }
-      .vertical-slider {
-        -webkit-appearance: slider-vertical;
-        width: 20px;
-        height: 80px;
-      }
-		</style>
 		<script>
+      // Show action bars when controllers can't be shown
 			$(function(){
 				$(document).scroll(function () {
 					var y = $(this).scrollTop();
@@ -156,20 +52,26 @@
 		<div id="menu_float">
 			<div id="boutons">
 				{{selectedTrack.title}}
-				<button ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
+				<button class="button" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
           <img src="public/image/player/play-64.png" />
         </button>      
-        <button ng-click="pause()" ng-show="pausable">
+        <button class="button" ng-click="pause()" ng-show="pausable">
           <img src="public/image/player/pause-64.png" />
         </button>
-        <button id="bstop" ng-click="stop()" ng-disabled="!stoppable">
+        <button class="button" id="bstop" ng-click="stop()" ng-disabled="!stoppable">
           <img src="public/image/player/stop-64.png" />
+        </button>
+        <button class="button" ng-click="setRecord(true)" ng-hide="recordable">
+          <img src="public/image/player/not_recording.png" />
+        </button>
+        <button class="button" ng-click="setRecord(false)" ng-show="recordable">
+          <img src="public/image/player/recording.png" />
         </button>
 				<input type="range" id ="masterVolume" min="0" max="100" value="100" ng-model="volume"> 
 			</div>
 		</div>
 
-
+    <!-- Controllers -->
 		<div class="row">
 			<div class="small-3 columns">
 				<div class="panel" style="margin-top:23px;">
@@ -183,25 +85,25 @@
 			<div class="small-9 columns" id="audio_replace">
 				<h1 id="title">AudioTech</h1>
 				
-				<button ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
+				<button class="button" ng-click="play(0)" ng-hide="pausable" ng-disabled="!playable">
 					<img src="public/image/player/play-64.png" />
 				</button>      
-				<button ng-click="pause()" ng-show="pausable">
+				<button class="button" ng-click="pause()" ng-show="pausable">
 					<img src="public/image/player/pause-64.png" />
 				</button>
-				<button id="bstop" ng-click="stop()" ng-disabled="!stoppable">
+				<button class="button" id="bstop" ng-click="stop()" ng-disabled="!stoppable">
 					<img src="public/image/player/stop-64.png" />
 				</button>
 
-        <button ng-click="setRecord(true)" ng-hide="recordable">
+        <button class="button" ng-click="setRecord(true)" ng-hide="recordable">
           <img src="public/image/player/not_recording.png" />
         </button>
-        <button ng-click="setRecord(false)" ng-show="recordable">
+        <button class="button" ng-click="setRecord(false)" ng-show="recordable">
           <img src="public/image/player/recording.png" />
         </button>
 				
 				<input type="range" style="display:none;" id ="masterVolume" min="0" max="100" value="100" ng-model="volume"> 
-        <!-- Bouton rotatif du volume -->
+        <!-- Rotate volume button -->
         <section id="rotate_button">
             <div id="bars">
               <div id="control"></div>
@@ -318,16 +220,13 @@
   </div>
 
   <!-- RECORDING -->
-	<div class="row">
+	<div class="row" ng-show="recordable">
 		<div class="small-3 columns">
 			<div class="panel">
 					<label for=""> <h4>Enregistrement</h4></label>
-					<!-- <canvas id="analyser" width="125" height="80" style="background-color:black;"></canvas>
-					<div style="float:right; cursor:pointer;">
-						<img src="public/image/player/record.png" style="display: block;" onclick="toggleRecording(this);">
-						<img src="public/image/player/dl.png" onclick="saveAudio();" style="display:none;" id="btn_dl">
-					</div> -->
-          <button ng-click="addRecord()" >Add record</button>
+          <button ng-click="addRecord()" class="button" style="width:100px">
+            <img src="public/image/plus.png" />
+          </button>
 				</div>
 			</div>
 		<div class="small-9 columns">
@@ -341,16 +240,5 @@
 	<!-- Foundation boutstrap -->
 	<script src="public/foundation/js/foundation.min.js"></script>
 	<script>$(document).foundation();</script>
-
-	<!-- Knob -->
-	<script src="public/knob/assets/knobKnob/transform.js"></script>
-	<script src="public/knob/assets/knobKnob/knobKnob.jquery.js"></script>
-	<script src="public/knob/assets/js/script.js"></script>
-
-		<!-- kiev
-		<script type='text/javascript'>
-			ClickBarTest.init(document.getElementById('clickbar_canvas'));
-		</script>
-	-->
 </body>
 </html>

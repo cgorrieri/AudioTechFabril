@@ -1,11 +1,13 @@
 function Track(name) {
     this.loaded = false;
     this.name = name;
+    this.subtracks = [];
+
+    // DBpedia datas
     this.title = "";
     this.description = "";
     this.image = "";
     this.url = "";
-    this.subtracks = [];
 }
 
 Track.prototype.load = function(callback) {
@@ -29,26 +31,23 @@ Track.prototype.load = function(callback) {
           if(callback) callback(thus.subtracks);
       };
       xhr.send();
+
+      DBpedia.getTitle(this.name, function(value) {
+        thus.title = value;
+      });
+
+      DBpedia.getAbstract(this.name, function(value) {
+        thus.description = value;
+      });
+
+      DBpedia.getPictureURL(this.name, function(value) {
+        thus.image = value;
+      });
+
+      DBpedia.getWikipediaPage(this.name, function(value) {
+        thus.url = value;
+      });
   } else {
       if(callback) callback(this.subtracks);
   }
-}
-
-Track.prototype.setDbPedia = function () {
-  var thus = this;
-    getTitle(this.name, function(value) {
-      thus.title = value;
-    });
-
-    getAbstract(this.name, function(value) {
-      thus.description = value;
-    });
-
-    getPictureURL(this.name, function(value) {
-      thus.image = value;
-    });
-
-    getWikipediaPage(this.name, function(value) {
-      thus.url = value;
-    });
 }

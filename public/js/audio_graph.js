@@ -11,7 +11,7 @@ function AudioGraph(volume) {
     this.masterVolumeSlider = document.querySelector("#masterVolume");
 
     // Init audio context
-    this.context = initAudioContext();
+    this.context = AudioGraph.initAudioContext();
 
     this.graphNodes = [];
     this.trackVolumeNodes = [];
@@ -28,6 +28,7 @@ function AudioGraph(volume) {
     // Créate a equalizer node
     this.equalizer = [];
     var thus = this;
+    // Set filters
     [60, 170, 350, 1000, 3500, 10000].forEach(function(freq, i) {
       var eq = thus.context.createBiquadFilter();
       eq.frequency.value = freq;
@@ -58,7 +59,7 @@ function AudioGraph(volume) {
 }
 
 // Private function to initialise the Audio Context
-function initAudioContext() {
+AudioGraph.initAudioContext = function() {
     var context;
 
     if (typeof AudioContext == "function") {
@@ -101,7 +102,7 @@ AudioGraph.prototype.initRecordingGraph = function(stream) {
 }
 
 AudioGraph.prototype.destroyRecordingGraph = function() {
-  //this.streamAudioInput.stop();
+  //this.streamAudioInput.destroy();
   //this.recProcessNode.stop();
 }
 
@@ -134,12 +135,13 @@ AudioGraph.prototype.buildGraph = function() {
 
     // Connect to the delayNode
     this.analyser.connect(this.delay);
-    //this.analyser.connect(this.context.destination);
+    this.analyser.connect(this.context.destination);
     
     // Connect the destination
     this.delay.connect(this.context.destination);
 }
 
+// Called when a buffer from the recorder is ready
 AudioGraph.prototype.recordingCallback = function(buffer) {
   if(this.activateRecording && this.state == PLAYING) {
     this.peak = 0;
@@ -147,7 +149,7 @@ AudioGraph.prototype.recordingCallback = function(buffer) {
     for(var i = 0; i < buffer.getChannelData(0).length; i++) {
       this.recBufferR.push(buff1[i]);
       this.recBufferL.push(buff2[i]);
-    
+      // Calc curren peak
       this.peak = Math.max(this.peak, buff1[i], buff2[i]);
     }
     this.recLength += buffer.getChannelData(0).length;
@@ -226,6 +228,7 @@ AudioGraph.prototype.changeMasterVolume = function(volume) {
    	else this.masterVolumeNode.gain.value = 0;
 }
 
+// Return the current time elapsed in percent
 AudioGraph.prototype.getPercent = function() {
     switch(this.state) {
       case STOPPED:
@@ -247,7 +250,6 @@ AudioGraph.prototype.setSpeed = function(speed) {
     });
 }
 
-// TODO update time on change speed
 AudioGraph.prototype.setRecording = function(recording, stream) {
     this.activateRecording = recording;
     if(this.activateRecording) {
@@ -257,6 +259,7 @@ AudioGraph.prototype.setRecording = function(recording, stream) {
     }
 }
 
+// Return an AudioBuffer from recorded buffers
 AudioGraph.prototype.getRecordedBuffer = function() {
     var buff = this.context.createBuffer(2, this.graphNodes[0].buffer.length, this.context.sampleRate);
     var b1 = buff.getChannelData(0);
@@ -266,5 +269,11 @@ AudioGraph.prototype.getRecordedBuffer = function() {
       b2[i] = this.recBufferR[i];
     }
     return buff;
+}
+
+AudioGraph.prototype.resetRecordedBuffer = function() {
+    this.recBufferL = [];
+    this.recBufferR = [];
+    this.recLength = 0;
 }
 

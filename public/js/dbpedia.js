@@ -1,5 +1,6 @@
 
-function getDataDbPedia(TitreChanson, type, callback) {
+var DBpedia = {};
+DBpedia.getDataDbPedia = function(TitreChanson, type, callback) {
 
 	var query  = encodeURIComponent(
 	'SELECT * WHERE { '+
@@ -10,14 +11,15 @@ function getDataDbPedia(TitreChanson, type, callback) {
 	var url = 'http://fr.dbpedia.org/sparql?default-graph-uri=&query=' +query+ '&format=json'
 
 	$.get(url, function(data){
-		if(data.results.bindings[0].i) {
-			var value = data.results.bindings[0].i.value;
-			callback(value);
-		}
+    if(data.results.bindings.length > 0)
+  		if(data.results.bindings[0].i) {
+  			var value = data.results.bindings[0].i.value;
+  			callback(value);
+  		}
 	});
 }
 
-function getDataDbPediaWithoutFilter(TitreChanson, type, callback) {
+DBpedia.getDataDbPediaWithoutFilter = function(TitreChanson, type, callback) {
 
 	var query  = encodeURIComponent(
 	'SELECT * WHERE { '+
@@ -27,29 +29,30 @@ function getDataDbPediaWithoutFilter(TitreChanson, type, callback) {
 	var url = 'http://fr.dbpedia.org/sparql?default-graph-uri=&query=' +query+ '&format=json'
 
 	$.get(url, function(data){
-		if(data.results.bindings[0].i) {
-			var value = data.results.bindings[0].i.value;
-			callback(value);
-		}
+    if(data.results.bindings.length > 0)
+  		if(data.results.bindings[0].i) {
+  			var value = data.results.bindings[0].i.value;
+  			callback(value);
+  		}
 	});
 }
 
-function getAbstract(music, callback) {
-	getDataDbPedia(music, '<http://dbpedia.org/ontology/abstract>', callback);
+DBpedia.getAbstract = function(music, callback) {
+	DBpedia.getDataDbPedia(music, '<http://dbpedia.org/ontology/abstract>', callback);
 }
 
-function getTitle(music, callback) {
-	getDataDbPedia(music, '<http://fr.dbpedia.org/property/titre>', callback);
+DBpedia.getTitle = function(music, callback) {
+	DBpedia.getDataDbPedia(music, '<http://fr.dbpedia.org/property/titre>', callback);
 }
 
-function getDateSortie(music, callback) {
-	getDataDbPedia(music, '<http://fr.dbpedia.org/property/sorti>', callback);
+DBpedia.getDateSortie = function(music, callback) {
+	DBpedia.getDataDbPedia(music, '<http://fr.dbpedia.org/property/sorti>', callback);
 }
 
-function getPictureURL(music, callback) {
-	getDataDbPediaWithoutFilter(music, '<http://dbpedia.org/ontology/thumbnail>', callback);
+DBpedia.getPictureURL = function(music, callback) {
+	DBpedia.getDataDbPediaWithoutFilter(music, '<http://dbpedia.org/ontology/thumbnail>', callback);
 }
 
-function getWikipediaPage(music, callback) {
-	getDataDbPediaWithoutFilter(music, '<http://xmlns.com/foaf/0.1/isPrimaryTopicOf>', callback);
+DBpedia.getWikipediaPage = function(music, callback) {
+	DBpedia.getDataDbPediaWithoutFilter(music, '<http://xmlns.com/foaf/0.1/isPrimaryTopicOf>', callback);
 }

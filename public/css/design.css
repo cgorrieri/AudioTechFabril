@@ -1,0 +1,82 @@
+.columns {
+	padding-left:0;
+}
+.canvas {
+	background:rgb(242, 242, 242);
+}
+.front_canvas {
+	position:absolute;
+	top:0;
+	left:0;
+}
+.sample {
+	border: solid white 1px;
+	background:grey;
+}
+.clickable:hover {
+	cursor:pointer;
+}
+input[type="range"].subtrack_sound_range {
+	width:150px;
+	height:11px;
+}
+#canvas_fequencies_left, #canvas_fequencies_right {
+	position: absolute;
+}
+#canvas_fequencies_left {
+	top:0px;
+	left:0px;
+	position
+}
+#canvas_fequencies_right {
+	float:right;
+	top:0px;
+	right:0px;
+}
+.draggedOver {
+	background-color: red;
+}
+#menu_float {
+	display: none;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	height: 60px;
+	z-index: 1;
+	margin: auto;
+	background-color: grey;
+}
+#menu_float #boutons {
+	margin-left: 30%;
+}
+.button, .button:focus, .button:hover {
+	/*Reset's every elements apperance*/
+	background: none repeat scroll 0 0 transparent;
+	border: medium none;
+	border-spacing: 0;
+	margin: 0;
+	padding: 0;
+}
+.button[disabled] {
+	background: none repeat scroll 0 0 transparent !important;
+	opacity:0.7;
+}
+#rotate_button {
+	width: 250px;
+	margin-left: 500px;
+	position:absolute;
+	top:0;
+	right:50px;
+}
+div.equalizers {
+	height:170px;
+}
+div.sound-control {
+	float:left;
+	margin-right:10px;
+}
+.vertical-slider {
+	-webkit-appearance: slider-vertical;
+	width: 20px;
+	height: 80px;
+}
